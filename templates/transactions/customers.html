@@ -1,0 +1,268 @@
+{% extends 'common/base.html' %}
+
+{% load static %}
+
+{% block css %}
+
+    <link rel="stylesheet" href="{% static 'stock/css/index.css' %}">
+    <link rel="stylesheet" href="{% static 'transactions/css/index.css' %}">
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="container-fluid py-4">
+
+        <div class="row justify-content-end">
+            <div class="col-12 col-md-auto mb-4">
+                <button id="add-customer" class="btn btn-primary me-4 py-2 px-3">
+                    <i class="fas fa-plus plus-icon"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header pb-0">
+                        <h6>Customers List</h6>
+                    </div>
+                    <div class="card-body px-0 pt-0 pb-2">
+                        <div class="table-responsive p-0">
+                            <table class="table align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            ID
+                                        </th>
+
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            Name
+                                        </th>
+
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                            Phone No
+                                        </th>
+
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                            GST No
+                                        </th>
+
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                            Date
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for customer in pagination %}
+                                        <tr>
+                                            <td>
+                                                <p class="text-xs font-weight-bold mb-0">{{ customer.id }}</p>
+                                            </td>
+
+                                            <td>
+                                                <a href="javascript:;" class="customer-name" data-url="{% url 'customer-details' %}">
+                                                    <p class="text-xs font-weight-bold mb-0">{{ customer.name }}</p>
+                                                </a>
+                                            </td>
+
+                                            <td>
+                                                <p class="text-xs font-weight-bold mb-0">{{ customer.phone }}</p>
+                                            </td>
+
+                                            <td>
+                                                <p class="text-xs font-weight-bold mb-0">{{ customer.gstin }}</p>
+                                            </td>
+
+                                            <td>
+                                                <p class="text-xs font-weight-bold mb-0">{{ customer.created_at }}</p>
+                                            </td>
+
+                                            <td class="align-middle">
+                                                <a href="javascript:;" class="edit-customer text-secondary font-weight-bold text-xs"
+                                                    data-toggle="tooltip" data-original-title="Edit customer" data-url="{% url 'customer-details' %}">
+                                                    Edit
+                                                </a>
+                                            </td>
+
+                                            <td class="align-middle">
+                                                <a href="javascript:;" class="delete-customer text-secondary font-weight-bold text-xs"
+                                                    data-toggle="tooltip" data-original-title="Delete customer">
+                                                    Delete
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="pagination-main">
+            {% include 'common/pagination.html' %}
+        </div>
+
+        <div id="pagination-search" style="display: none;">
+            {% include 'common/pagination-search.html' %}
+        </div>
+
+    </div>
+
+    <div id="popup-add" class="modal" style="display: none;">
+        <div class="modal-content" style="height: 100%;">
+
+            <div class="modal-header">
+                <h5 class="modal-title" style="text-align: center; margin: 0 auto;">New Customer</h5>
+                <button style="background-color: transparent; border: none;" type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body" style="height: 100%; overflow-y: auto;">
+
+                <div id="customer-details-section">
+                    <h5>Customer Details</h5>
+
+                    <form id="customer-details-form">
+                        <div class="form-group">
+                            <label for="customer-name">Name</label>
+                            <input type="text" class="form-control" id="customer-name" name="customer-name">
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="customer-phone">Phone No</label>
+                                    <input type="text" class="form-control" id="customer-phone" name="customer-phone">
+                                </div>
+                            </div>
+
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="customer-email">Email</label>
+                                    <input type="text" class="form-control" id="customer-email" name="customer-email">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="customer-address">Address</label>
+                                    <input type="text" class="form-control" id="customer-address" name="customer-address">
+                                </div>
+                            </div>
+
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="customer-gstin">GSTIN No</label>
+                                    <input type="text" class="form-control" id="customer-gstin" name="customer-gstin">
+                                </div>
+                            </div>
+                    </form>
+                </div>
+
+            </div>
+
+            <div class="modal-footer justify-content-center">
+                <button id="add-customer-button" type="button" class="btn btn-primary" form="add-customer-form" data-url="{% url 'new-customer' %}">Add</button>
+                <button id="cancel-button-add" type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="popup-edit" class="modal" style="display: none;">
+        <div class="modal-content" style="height: 100%;">
+
+            <div class="modal-header">
+                <h5 class="modal-title" style="text-align: center; margin: 0 auto;">Edit Customer</h5>
+                <button style="background-color: transparent; border: none;" type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <form id="edit-customer-form">
+                    <input type="hidden" id="edit-customer-id" name="edit-customer-id">
+
+                    <div class="form-group">
+                        <label for="customer-name">Name:</label>
+                        <input type="text" class="form-control" id="edit-customer-name" name="edit-customer-name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customer-phone">Phone No:</label>
+                        <input type="text" class="form-control" id="edit-customer-phone" name="edit-customer-phone">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customer-email">Email:</label>
+                        <input type="text" class="form-control" id="edit-customer-email" name="edit-customer-email">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customer-address">Address:</label>
+                        <input type="text" class="form-control" id="edit-customer-address" name="edit-customer-address">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customer-gstin">GSTIN NO:</label>
+                        <input type="text" class="form-control" id="edit-customer-gstin" name="edit-customer-gstin">
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer justify-content-center">
+                <button id="update-customer-button" type="button" class="btn btn-primary" form="edit-customer-form" data-url="{% url 'edit-customer' %}">Update</button>
+                <button id="delete-button-edit" type="button" class="btn btn-secondary">Delete</button>
+                <button id="cancel-button-edit" type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="popup-delete" class="modal" style="display: none;">
+        <div class="modal-content" style="height: 100%;">
+
+            <div class="modal-header">
+                <h5 class="modal-title" style="text-align: center; margin: 0 auto;">Delete Customer</h5>
+                <button style="background-color: transparent; border: none;" type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <form id="delete-customer-form">
+                    <input type="hidden" id="delete-customer-id" name="delete-customer-id">
+
+                    <div class="form-group">
+                        <h6 id="delete-customer-confirmation">Are you sure you want to delete this customer?</h6>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer justify-content-center">
+                <button id="delete-customer-button" type="button" class="btn btn-primary" form="delete-customer-form" data-url="{% url 'delete-customer' %}">Yes</button>
+                <button id="cancel-button-delete" type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="popup-show" class="modal" style="display: none;">
+        <div class="modal-content" style="height: 100%;">
+            <div class="modal-header">
+                <h5 class="modal-title" style="text-align: center; margin: 0 auto;">Customer Details</h5>
+                <button style="background-color: transparent; border: none;" type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body" id="customer-details-content"></div>
+            <div class="modal-footer justify-content-center">
+                <button id="ok-button-show" type="button" class="btn btn-danger" data-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+
+    <script src="{% static 'stock/js/common.js' %}"></script>
+    <script src="{% static 'transactions/js/customers.js' %}"></script>
+
+{% endblock %}

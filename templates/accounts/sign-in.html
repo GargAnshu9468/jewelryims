@@ -1,0 +1,112 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+
+  <main class="main-content mt-0">
+    <section>
+      <div class="page-header min-vh-75">
+        <div class="container">
+          <div class="row">
+            <div class="col-xl-4 col-lg-5 col-md-6 d-flex flex-column mx-auto">
+              <div class="card card-plain mt-8">
+
+                <div class="card-header pb-0 text-center bg-transparent">
+                  <div class="row align-items-center justify-content-center">
+                    <div class="col">
+                      <h3 class="font-weight-bolder text-info text-gradient mb-0">Welcome back!</h3>
+                    </div>
+                  </div>
+
+                  <br>
+
+                  <div class="row align-items-center justify-content-center">
+                    <div class="col">
+                      <p class="mb-0">*All fields are required*</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card-body">
+                  <form id="login-form" role="form" method="post">
+                    {% csrf_token %}
+                    <label>Username</label>
+
+                    <div class="mb-3">
+                      <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="username-addon" name="username">
+                    </div>
+
+                    <label>Password</label>
+
+                    <div class="mb-3">
+                      <input type="password" class="form-control" placeholder="Password" aria-label="Password" aria-describedby="password-addon" name="password">
+                    </div>
+
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="rememberMe" checked="">
+                      <label class="form-check-label" for="rememberMe">Remember me</label>
+                    </div>
+
+                    <div class="text-center">
+                      <button type="submit" class="btn bg-gradient-info w-100 mt-4 mb-0">Sign in</button>
+                    </div>
+                  </form>
+                </div>
+
+                <div class="card-footer text-center pt-0 px-lg-2 px-1">
+                  <p class="mb-4 text-sm mx-auto">
+                    Don't have an account?
+                    <a href="{% url 'register' %}" class="text-info text-gradient font-weight-bold">Sign up</a>
+                  </p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="email-verification-popup" class="modal" style="display: none;">
+    <div class="modal-content" style="height: 100%;">
+
+        <div class="modal-header">
+            <h5 class="modal-title" style="text-align: center; margin: 0 auto;">Email Verification Pending</h5>
+            <button style="background-color: transparent; border: none;" type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="p-div">
+                <p class="p-tag">Thank you for registering. An email has been sent to your email address. Please check your inbox and click the verification link to activate your account.</p>
+                <p class="p-tag">If you did not receive the email, please check your spam folder. If you still encounter issues, please contact support.</p>
+            </div>
+        </div>
+
+        <div class="modal-footer justify-content-center">
+            <button id="email-verification-ok-button" type="button" class="btn btn-danger" data-dismiss="modal">Ok</button>
+        </div>
+    </div>
+  </div>
+
+  <div id="activation-status-popup" class="modal" style="display: none;">
+    <div class="modal-content" style="height: 100%;">
+
+        <div class="modal-header">
+            <h5 class="modal-title" style="text-align: center; margin: 0 auto;">Activation Status</h5>
+            <button style="background-color: transparent; border: none;" type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="p-div">
+                <h5 id="activation-status-heading"></h5>
+                <p id="activation-status-message" class="p-tag"></p>
+            </div>
+        </div>
+
+        <div class="modal-footer justify-content-center">
+            <button id="activation-status-ok-button" type="button" class="btn btn-danger" data-dismiss="modal">Ok</button>
+        </div>
+    </div>
+  </div>
+
+{% endblock %}

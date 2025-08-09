@@ -1,0 +1,44 @@
+{% for purchase in purchases %}
+    <tr>
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ purchase.billno.billno }}</p>
+        </td>
+
+        <td>
+            <a href="javascript:;" class="supplier-name" data-url="{% url 'supplier-details' %}"
+                data-supplier-id="{{ purchase.billno.supplier.id }}">
+                <p class="text-xs font-weight-bold mb-0">{{ purchase.billno.supplier.name }}</p>
+            </a>
+        </td>
+
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ purchase.stock.name }}</p>
+        </td>
+
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ purchase.quantity }}</p>
+        </td>
+
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ purchase.totalprice }}</p>
+        </td>
+
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ purchase.billno.time }}</p>
+        </td>
+
+        <td class="align-middle">
+            <a href="javascript:;" class="view-purchase-bill text-secondary font-weight-bold text-xs" data-toggle="tooltip"
+                data-original-title="View purchase bill" data-url="{% url 'get-purchase' %}">
+                View
+            </a>
+        </td>
+
+        <td class="align-middle">
+            <a href="javascript:;" class="delete-purchase-bill text-secondary font-weight-bold text-xs"
+                data-toggle="tooltip" data-original-title="Delete purchase bill">
+                Delete
+            </a>
+        </td>
+    </tr>
+{% endfor %}

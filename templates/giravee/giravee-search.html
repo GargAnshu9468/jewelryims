@@ -1,0 +1,43 @@
+{% for giravee in giravees %}
+
+    <tr>
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ giravee.id }}</p>
+        </td>
+
+        <td>
+            <a href="javascript:;" class="giravee-name" data-url="{% url 'get-giravees' %}" data-giravee-id="{{ giravee.id }}">
+                <p class="text-xs font-weight-bold mb-0">{{ giravee.name }}</p>
+            </a>
+        </td>
+
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ giravee.amount }}</p>
+        </td>
+
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ giravee.weight }}</p>
+        </td>
+
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ giravee.interest_rate }}</p>
+        </td>
+
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ giravee.created_at }}</p>
+        </td>
+
+        <td class="align-middle">
+            <a href="javascript:;" class="edit-giravee text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit giravee">
+                Edit
+            </a>
+        </td>
+
+        <td class="align-middle">
+            <a href="javascript:;" class="delete-giravee text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Delete giravee">
+                Delete
+            </a>
+        </td>
+    </tr>
+
+{% endfor %}

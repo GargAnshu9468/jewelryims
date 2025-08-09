@@ -1,0 +1,60 @@
+.modal-content {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.modal-title {
+    text-align: center;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-header {
+    border: none;
+}
+
+.modal-footer {
+    border-top: none;
+    padding: 20px;
+    justify-content: center;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.plus-icon {
+    font-size: 12px;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: #fff;
+}
+
+.pagination .page-link:hover {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.pagination .page-item.disabled .page-link {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}

@@ -1,0 +1,39 @@
+{% for customer in customers %}
+    <tr>
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ customer.id }}</p>
+        </td>
+
+        <td>
+            <a href="javascript:;" class="customer-name" data-url="{% url 'customer-details' %}">
+                <p class="text-xs font-weight-bold mb-0">{{ customer.name }}</p>
+            </a>
+        </td>
+
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ customer.phone }}</p>
+        </td>
+
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ customer.gstin }}</p>
+        </td>
+
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ customer.created_at }}</p>
+        </td>
+
+        <td class="align-middle">
+            <a href="javascript:;" class="edit-customer text-secondary font-weight-bold text-xs"
+                data-toggle="tooltip" data-original-title="Edit customer" data-url="{% url 'customer-details' %}">
+                Edit
+            </a>
+        </td>
+
+        <td class="align-middle">
+            <a href="javascript:;" class="delete-customer text-secondary font-weight-bold text-xs"
+                data-toggle="tooltip" data-original-title="Delete customer">
+                Delete
+            </a>
+        </td>
+    </tr>
+{% endfor %}

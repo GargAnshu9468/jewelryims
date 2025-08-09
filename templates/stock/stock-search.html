@@ -1,0 +1,45 @@
+{% for stock in stocks %}
+
+    <tr>
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ stock.id }}</p>
+        </td>
+
+        <td>
+            <a href="javascript:;" class="stock-name" data-url="{% url 'get-stocks' %}" data-stock-id="{{ stock.id }}">
+                <p class="text-xs font-weight-bold mb-0">{{ stock.name }}</p>
+            </a>
+        </td>
+
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ stock.quantity }}</p>
+        </td>
+
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ stock.weight }}</p>
+        </td>
+
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ stock.material }}</p>
+        </td>
+
+        <td>
+            <p class="text-xs font-weight-bold mb-0">{{ stock.category }}</p>
+        </td>
+
+        <td class="align-middle">
+            <a href="javascript:;" class="edit-stock text-secondary font-weight-bold text-xs" data-toggle="tooltip"
+                data-original-title="Edit stock">
+                Edit
+            </a>
+        </td>
+
+        <td class="align-middle">
+            <a href="javascript:;" class="delete-stock text-secondary font-weight-bold text-xs" data-toggle="tooltip"
+                data-original-title="Delete stock">
+                Delete
+            </a>
+        </td>
+    </tr>
+
+{% endfor %}

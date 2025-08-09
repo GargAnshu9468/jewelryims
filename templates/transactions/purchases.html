@@ -1,0 +1,539 @@
+{% extends 'common/base.html' %}
+
+{% load static %}
+
+{% block css %}
+
+    <link rel="stylesheet" href="{% static 'stock/css/index.css' %}">
+    <link rel="stylesheet" href="{% static 'transactions/css/index.css' %}">
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="container-fluid py-4">
+
+        <div class="row justify-content-end">
+            <div class="col-12 col-md-auto mb-4">
+                <button id="add-purchase" class="btn btn-primary me-4 py-2 px-3">
+                    <i class="fas fa-plus plus-icon"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header pb-0">
+                        <h6>Purchases List</h6>
+                    </div>
+                    <div class="card-body px-0 pt-0 pb-2">
+                        <div class="table-responsive p-0">
+                            <table class="table align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            Bill No.
+                                        </th>
+
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                            Supplier
+                                        </th>
+
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                            Stocks
+                                        </th>
+
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                            Quantity
+                                        </th>
+
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                            Total Price
+                                        </th>
+
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                            Date
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for purchase in pagination %}
+                                        <tr>
+                                            <td>
+                                                <p class="text-xs font-weight-bold mb-0">{{ purchase.billno.billno }}</p>
+                                            </td>
+
+                                            <td>
+                                                <a href="javascript:;" class="supplier-name" data-url="{% url 'supplier-details' %}" data-supplier-id="{{ purchase.billno.supplier.id }}">
+                                                    <p class="text-xs font-weight-bold mb-0">{{ purchase.billno.supplier.name }}</p>
+                                                </a>
+                                            </td>
+
+                                            <td>
+                                                <p class="text-xs font-weight-bold mb-0">{{ purchase.stock.name }}</p>
+                                            </td>
+
+                                            <td>
+                                                <p class="text-xs font-weight-bold mb-0">{{ purchase.quantity }}</p>
+                                            </td>
+
+                                            <td>
+                                                <p class="text-xs font-weight-bold mb-0">{{ purchase.totalprice }}</p>
+                                            </td>
+
+                                            <td>
+                                                <p class="text-xs font-weight-bold mb-0">{{ purchase.billno.time }}</p>
+                                            </td>
+
+                                            <td class="align-middle">
+                                                <a href="javascript:;" class="view-purchase-bill text-secondary font-weight-bold text-xs"
+                                                    data-toggle="tooltip" data-original-title="View purchase bill" data-url="{% url 'get-purchase' %}">
+                                                    View
+                                                </a>
+                                            </td>
+
+                                            <td class="align-middle">
+                                                <a href="javascript:;" class="delete-purchase-bill text-secondary font-weight-bold text-xs"
+                                                    data-toggle="tooltip" data-original-title="Delete purchase bill">
+                                                    Delete
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="pagination-main">
+            {% include 'common/pagination.html' %}
+        </div>
+
+        <div id="pagination-search" style="display: none;">
+            {% include 'common/pagination-search.html' %}
+        </div>
+
+    </div>
+
+    <div id="popup-add" class="modal" style="display: none;">
+        <div class="modal-content" style="height: 100%;">
+
+            <div class="modal-header">
+                <h5 class="modal-title" style="text-align: center; margin: 0 auto;">New Purchase</h5>
+                <button style="background-color: transparent; border: none;" type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body" style="height: 100%; overflow-y: auto;">
+
+                <div id="supplier-details-section">
+                    <h5>Supplier Details</h5>
+
+                    <form id="supplier-details-form">
+                        <div class="form-group">
+                            <label for="supplier">Supplier</label>
+                            <select class="form-control" id="supplier" name="supplier"></select>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="supplier-phone">Phone No</label>
+                                    <input type="text" class="form-control" id="supplier-phone" name="supplier-phone" readonly>
+                                </div>
+                            </div>
+
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="supplier-email">Email</label>
+                                    <input type="text" class="form-control" id="supplier-email" name="supplier-email" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="supplier-address">Address</label>
+                                    <input type="text" class="form-control" id="supplier-address" name="supplier-address" readonly>
+                                </div>
+                            </div>
+
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="supplier-gstin">GSTIN No</label>
+                                    <input type="text" class="form-control" id="supplier-gstin" name="supplier-gstin" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="product-details-section">
+                    <h5>Product Details</h5>
+
+                    <form id="product-details-form">
+                        <div class="form-group row align-items-end">
+                            <div class="col-md-2">
+                                <label for="stock">Stock</label>
+                                <select class="form-control stock" name="stock"></select>
+                            </div>
+
+                            <div class="col-md-1">
+                                <label for="stock-note">Note</label>
+                                <input type="text" class="form-control stock-note" name="stock-note">
+                            </div>
+
+                            <div class="col-md-2">
+                                <label for="price-per-item">Price per gram</label>
+                                <input type="number" class="form-control price-per-item" name="price-per-item">
+                            </div>
+
+                            <div class="col-md-2">
+                                <label for="quantity">Quantity</label>
+                                <input type="number" class="form-control quantity" name="quantity">
+                            </div>
+
+                            <div class="col-md-2">
+                                <label for="weight">Weight</label>
+                                <input type="number" class="form-control weight" name="weight">
+                            </div>
+
+                            <div class="col-md-2">
+                                <label for="price">Price</label>
+                                <input type="text" class="form-control price" name="price" readonly>
+                            </div>
+
+                            <div class="col-md-1">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-danger mt-4 delete-item">-</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="col-md-1 mt-2">
+                    <a href="javascript:;" class="btn-link" id="add-more" style="color: #55b159; position: absolute; right: 45px;">+ Add More</a>
+                </div>
+
+                <div id="discount-details-section" class="mt-4">
+                    <h5>Discount Details</h5>
+
+                    <form id="discount-details-form">
+                        <div class="form-group row">
+                            <div class="col">
+                                <label for="discount-type">Discount Type</label>
+
+                                <select class="form-control" id="discount-type" name="discount-type">
+                                    <option value="">--- Select Discount Type ---</option>
+                                    <option value="Fixed">Fixed</option>
+                                    <option value="Percentage">Percentage</option>
+                                </select>
+                            </div>
+
+                            <div class="col">
+                                <label for="discount-value">Discount Value</label>
+                                <input type="number" class="form-control" id="discount-value" name="discount-value">
+                            </div>
+
+                            <div class="col">
+                                <label for="discount-note">Note</label>
+                                <input type="text" class="form-control" id="discount-note" name="discount-note">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="labour-making-charge-section" class="mt-4">
+                    <h5>Labour/Making Charges</h5>
+
+                    <form id="labour-making-charge-form">
+                        <div class="form-group row">
+                            <div class="col">
+                                <label for="labour-making-charge-type">Labour/Making Charge Type</label>
+
+                                <select class="form-control" id="labour-making-charge-type" name="labour-making-charge-type">
+                                    <option value="">--- Select Labour/Making Charge Type ---</option>
+                                    <option value="Fixed">Fixed</option>
+                                    <option value="Per Gram">Per Gram</option>
+                                </select>
+                            </div>
+
+                            <div class="col">
+                                <label for="labour-making-charge-value">Labour/Making Charge Value</label>
+                                <input type="number" class="form-control" id="labour-making-charge-value" name="labour-making-charge-value">
+                            </div>
+
+                            <div class="col">
+                                <label for="labour-making-charge-note">Note</label>
+                                <input type="text" class="form-control" id="labour-making-charge-note" name="labour-making-charge-note">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="tax-details-section" class="mt-4">
+                    <h5>Tax Details</h5>
+
+                     <form id="tax-details-form">
+                        <div class="form-group row">
+                            <div class="col">
+                                <label for="gst">GST (%):</label>
+                                <input type="text" class="form-control" id="gst" name="gst">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="payment-details-section" class="mt-4">
+                    <h5>Payment Details</h5>
+
+                    <form id="payment-details-form">
+                        <div class="form-group row">
+                            <div class="col">
+                                <label for="payment-method">Payment Method</label>
+
+                                <select class="form-control" id="payment-method" name="payment-method">
+                                    <option value="Other">--- Select Payment Method ---</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="Card">Card</option>
+                                    <option value="UPI">UPI</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+
+                            <div class="col">
+                                <label for="total-amount-add">Total Amount</label>
+                                <input type="text" class="form-control" id="total-amount-add" name="total-amount-add" readonly>
+                            </div>
+
+                            <div class="col">
+                                <label for="payment-amount">Payment Paid</label>
+                                <input type="number" class="form-control" id="payment-amount" name="payment-amount">
+                            </div>
+
+                            <div class="col">
+                                <label for="remaining-amount-add">Remaining Amount</label>
+                                <input type="text" class="form-control" id="remaining-amount-add" name="remaining-amount-add" readonly>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="modal-footer justify-content-center">
+                <button id="add-purchase-button" type="button" class="btn btn-primary" form="add-purchase-form" data-url="{% url 'new-purchase' %}">Add</button>
+                <button id="calculate-button-add" type="button" class="btn btn-secondary">Calculate</button>
+                <button id="cancel-button-add" type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="popup-view" class="modal" style="display: none;">
+        <div class="modal-content" style="height: 100%;">
+
+            <div class="modal-header">
+                <h5 class="modal-title" style="text-align: center; margin: 0 auto;">View Purchase Bill</h5>
+                <button style="background-color: transparent; border: none;" type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body" style="height: 100%; overflow-y: auto; justify-content: center; align-items: center;">
+                <input type="hidden" id="view-purchase-bill-id" name="view-purchase-bill-id">
+
+                <div id="purchase-bill">
+                    <div class="bill-container">
+                        <div class="section-container">
+                            <div class="section" style="float: left; width: 50%; border-right: 1px solid #ccc; padding-right: 10px;">
+                                <h6 id="invoice-no"></h6>
+                            </div>
+
+                            <div class="section" style="float: right; width: 50%; border-left: 1px solid #ccc; padding-left: 10px;">
+                                <h6 id="bill-date"></h6>
+                            </div>
+                        </div>
+
+                        <hr style="border: 1px solid #000; margin: 10px 0;">
+
+                        <div class="section-container">
+                            <div class="section" style="float: left; width: 50%; border-right: 1px solid #ccc; padding-right: 10px;">
+                                <h6>Supplier Details</h6>
+
+                                <p id="supplier-name-view"></p>
+                                <p id="supplier-phone-view"></p>
+                                <p id="supplier-gstin-view"></p>
+                                <p id="supplier-address-view"></p>
+                            </div>
+
+                            <div class="section" style="float: right; width: 50%; border-left: 1px solid #ccc; padding-left: 10px;">
+                                <h6>Buyer Details</h6>
+
+                                <p>Contact Person: Raju Garg</p>
+                                <p>Phone No.: 9671880255</p>
+                                <p>Shop: Garg Jewellers</p>
+                                <p>Address: Sarai Pukta Bazar, Palwal, Haryana, 121102</p>
+                            </div>
+
+                            <div style="clear: both;"></div>
+                        </div>
+
+                        <hr style="border: 1px solid #000; margin: 10px 0;">
+
+                        <div class="section">
+                            <h6>Product Items</h6>
+
+                            <table class="item-table">
+                                <thead>
+                                    <tr>
+                                        <th>SL</th>
+                                        <th>GOODS</th>
+                                        <th>QTY</th>
+                                        <th>WEIGHT (G)</th>
+                                        <th>RATE PER GRAM</th>
+                                        <th>AMOUNT (RS.)</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="product-items-view"></tbody>
+                            </table>
+                        </div>
+
+                        <hr style="border: 1px solid #000; margin: 10px 0;">
+
+                        <div class="section-container">
+                            <!-- <div class="section" style="float: left; width: 50%; border-right: 1px solid #ccc; padding-right: 10px;">
+                                <h6>Bank Details</h6>
+
+                                <p>Bank Name: ICICI Bank</p>
+                                <p>Branch: Mayur Vihar, New Delhi</p>
+                                <p>Account Number: 54A7 6S31 4T85 0RO3</p>
+                                <p>IFSC Code: ABCD 010 0110</p>
+                            </div> -->
+
+                            <div class="section" style="float: right; width: 100%; border-left: 1px solid #ccc; padding-left: 10px;">
+                                <h6>Pay & Taxes</h6>
+
+                                <div style="display: flex; flex-direction: column;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <label for="gst-input">GST @ 3%:</label>
+                                        <input type="text" id="gst-input" readonly>
+                                    </div>
+
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <label for="view-labour-making-charges">Labour charges:</label>
+                                        <input type="text" id="view-labour-making-charges" readonly>
+                                    </div>
+                                </div>
+
+                                <hr style="border: 1px solid #000; margin: 10px 0;">
+
+                                <div style="display: flex; flex-direction: column;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <label for="total-price-view">Total (Rs.):</label>
+                                        <input type="number" id="total-price-view" readonly>
+                                    </div>
+
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <label for="total-discount-view">Discount (Rs.):</label>
+                                        <input type="number" id="total-discount-view">
+                                    </div>
+
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <label for="grand-total-view">Grand Total (Rs.):</label>
+                                        <input type="number" id="grand-total-view" readonly>
+                                    </div>
+
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <label for="paid-amount-view">Paid (Rs.):</label>
+                                        <input type="number" id="paid-amount-view">
+                                    </div>
+
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <label for="remaining-amount-view">Remaining (Rs.):</label>
+                                        <input type="number" id="remaining-amount-view" readonly>
+                                    </div>
+                                </div>
+
+                                <hr style="border: 1px solid #000; margin: 10px 0;">
+
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <label for="payment-method-view">Payment method:</label>
+                                    <h6 id="payment-method-view"></h6>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <label for="bill-status-view">Bill status:</label>
+                                    <h6 id="bill-status-view"></h6>
+                                </div>
+                            </div>
+
+                            <div style="clear: both;"></div>
+                        </div>
+
+                        <hr style="border: 1px solid #000; margin: 10px 0;">
+
+                        <div class="section">
+                            <p>For Company<br><br><br><br>Signature</p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer justify-content-center">
+                <button id="print-button" type="button" class="btn btn-primary">Print</button>
+                <button id="save-draft-button-view" type="button" class="btn btn-secondary" data-url="{% url 'update-purchase' %}">Save Draft</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="popup-delete" class="modal" style="display: none;">
+        <div class="modal-content" style="height: 100%;">
+
+            <div class="modal-header">
+                <h5 class="modal-title" style="text-align: center; margin: 0 auto;">Delete Purchase Bill</h5>
+                <button style="background-color: transparent; border: none;" type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <form id="delete-purchase-bill-form">
+                    <input type="hidden" id="delete-purchase-bill-id" name="delete-purchase-bill-id">
+
+                    <div class="form-group">
+                        <h6 id="delete-purchase-bill-confirmation">Are you sure you want to delete this purchase bill?</h6>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer justify-content-center">
+                <button id="delete-purchase-bill-button" type="button" class="btn btn-primary" form="delete-purchase-bill-form" data-url="{% url 'delete-purchase' %}">Yes</button>
+                <button id="cancel-button-delete" type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="popup-show" class="modal" style="display: none;">
+        <div class="modal-content" style="height: 100%;">
+            <div class="modal-header">
+                <h5 class="modal-title" style="text-align: center; margin: 0 auto;">Supplier Details</h5>
+                <button style="background-color: transparent; border: none;" type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body" id="supplier-details-content"></div>
+
+            <div class="modal-footer justify-content-center">
+                <button id="ok-button-show" type="button" class="btn btn-danger" data-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+
+    <script src="{% static 'stock/js/common.js' %}"></script>
+    <script src="{% static 'transactions/js/purchases.js' %}"></script>
+
+{% endblock %}

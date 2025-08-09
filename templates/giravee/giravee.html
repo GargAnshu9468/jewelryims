@@ -1,0 +1,377 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'stock/css/index.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <div class="row justify-content-end">
+        <div class="col-12 col-md-auto mb-4">
+            <button id="add-giravee" class="btn btn-primary me-4 py-2 px-3">
+                <i class="fas fa-plus plus-icon"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>Giravee List</h6>
+                </div>
+
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Amount</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Weight</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Interest</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for giravee in pagination %}
+                                <tr>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ giravee.id }}</p>
+                                    </td>
+
+                                    <td>
+                                        <a href="javascript:;" class="giravee-name" data-url="{% url 'get-giravees' %}"
+                                            data-giravee-id="{{ giravee.id }}">
+                                            <p class="text-xs font-weight-bold mb-0">{{ giravee.name }}</p>
+                                        </a>
+                                    </td>
+
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ giravee.amount }}</p>
+                                    </td>
+
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ giravee.weight }}</p>
+                                    </td>
+
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ giravee.interest_rate }}</p>
+                                    </td>
+
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ giravee.created_at }}</p>
+                                    </td>
+
+                                    <td class="align-middle">
+                                        <a href="javascript:;"
+                                            class="edit-giravee text-secondary font-weight-bold text-xs"
+                                            data-toggle="tooltip" data-original-title="Edit giravee">
+                                            Edit
+                                        </a>
+                                    </td>
+
+                                    <td class="align-middle">
+                                        <a href="javascript:;"
+                                            class="delete-giravee text-secondary font-weight-bold text-xs"
+                                            data-toggle="tooltip" data-original-title="Delete giravee">
+                                            Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pagination-main">
+        {% include 'common/pagination.html' %}
+    </div>
+
+    <div id="pagination-search" style="display: none;">
+        {% include 'common/pagination-search.html' %}
+    </div>
+
+</div>
+
+<div id="popup-add" class="modal" style="display: none;">
+    <div class="modal-content" style="height: 100%;">
+
+        <div class="modal-header">
+            <h5 class="modal-title" style="text-align: center; margin: 0 auto;">Add Giravee</h5>
+            <button style="background-color: transparent; border: none;" type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <div class="modal-body" style="height: 100%; overflow-y: auto;">
+            <form id="add-giravee-form">
+                <div class="form-group">
+                    <label for="giravee-name">Name:</label>
+                    <input type="text" class="form-control" id="add-giravee-name" name="add-giravee-name">
+                </div>
+
+                <div class="form-group row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="giravee-amount">Amount Given:</label>
+                            <input type="number" class="form-control" id="add-giravee-amount" name="add-giravee-amount">
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="giravee-description">Description:</label>
+                            <input type="text" class="form-control" id="add-giravee-description" name="add-stock-description">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="giravee-weight">Weight:</label>
+                            <input type="text" class="form-control" id="add-giravee-weight" name="add-giravee-weight">
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="giravee-interest-rate">Interest Rate:</label>
+                            <input type="text" class="form-control" id="add-giravee-interest-rate" name="add-giravee-interest-rate">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="add-giravee-locker-number">Locker Number:</label>
+
+                    <select class="form-control" id="add-giravee-locker-number" name="add-giravee-locker-number">
+                        <option value="1"> --- Select Locker Number --- </option>
+                        {% for value, label in locker_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <div class="modal-footer justify-content-center">
+            <button id="add-giravee-button" type="button" class="btn btn-primary" form="add-giravee-form" data-url="{% url 'add-giravee' %}">
+                Add
+            </button>
+            <button id="reset-button-add" type="reset" class="btn btn-secondary">Reset</button>
+            <button id="cancel-button-add" type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="popup-edit" class="modal" style="display: none;">
+    <div class="modal-content" style="height: 100%;">
+
+        <div class="modal-header">
+            <h5 class="modal-title" style="text-align: center; margin: 0 auto;">Edit Giravee</h5>
+            <button style="background-color: transparent; border: none;" type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <div class="modal-body" style="height: 100%; overflow-y: auto;">
+            <form id="edit-giravee-form">
+                <input type="hidden" id="edit-giravee-id" name="edit-giravee-id">
+
+                <br>
+
+                <h5>Giravee Details</h5>
+
+                <br>
+
+                <div class="form-group">
+                    <label for="giravee-name">Name:</label>
+                    <input type="text" class="form-control" id="edit-giravee-name" name="edit-giravee-name">
+                </div>
+
+                <div class="form-group row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="giravee-amount">Amount Given:</label>
+                            <input type="number" class="form-control" id="edit-giravee-amount" name="edit-giravee-amount">
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="giravee-description">Description:</label>
+                            <input type="text" class="form-control" id="edit-giravee-description" name="edit-giravee-description">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="giravee-weight">Weight:</label>
+                            <input type="text" class="form-control" id="edit-giravee-weight" name="edit-giravee-weight">
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="giravee-interest-rate">Interest Rate:</label>
+                            <input type="text" class="form-control" id="edit-giravee-interest-rate" name="edit-giravee-interest-rate">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-giravee-locker-number">Locker Number:</label>
+
+                    <select class="form-control" id="edit-giravee-locker-number" name="edit-giravee-locker-number">
+                        <option value="1"> --- Select Locker Number --- </option>
+                        {% for value, label in locker_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <h5>Transaction History</h5>
+
+                <div class="table-responsive p-0">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Amount</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Note</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="transaction-history-body"></tbody>
+                    </table>
+                </div>
+
+                <br>
+
+                <h5>Amount Summary</h5>
+
+                <br>
+
+                <div class="form-group row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="giravee-paid-amount">Paid Amount:</label>
+                            <input type="text" class="form-control" id="edit-giravee-paid-amount" name="edit-giravee-paid-amount" readonly>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="giravee-interest-amount">Interest Amount:</label>
+                            <input type="text" class="form-control" id="edit-giravee-interest-amount" name="edit-giravee-interest-amount" readonly>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="giravee-due-amount-without-interest">Due Amount (Without Interest):</label>
+                            <input type="text" class="form-control" id="edit-giravee-due-amount-without-interest" name="edit-giravee-due-amount-without-interest" readonly>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="giravee-due-amount">Total Due Amount (With Interest):</label>
+                            <input type="text" class="form-control" id="edit-giravee-due-amount" name="edit-giravee-due-amount" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <h5>New Deposit</h5>
+
+                <br>
+
+                <div class="form-group row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="giravee-add-amount">Deposit Amount:</label>
+                            <input type="text" class="form-control" id="edit-giravee-add-amount" name="edit-giravee-add-amount">
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="giravee-add-note">Note:</label>
+                            <input type="text" class="form-control" id="edit-giravee-add-note" name="edit-giravee-add-note">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="modal-footer justify-content-center">
+            <button id="update-giravee-button" type="button" class="btn btn-primary" form="edit-giravee-form" data-url="{% url 'edit-giravee' %}">
+                Update
+            </button>
+            <button id="refresh-giravee-button" type="button" class="btn btn-warning" data-url="{% url 'refresh-giravee' %}">Refresh</button>
+            <button id="delete-button-edit" type="button" class="btn btn-secondary">Delete</button>
+            <button id="cancel-button-edit" type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="popup-delete" class="modal" style="display: none;">
+    <div class="modal-content" style="height: 100%;">
+
+        <div class="modal-header">
+            <h5 class="modal-title" style="text-align: center; margin: 0 auto;">Delete Giravee</h5>
+            <button style="background-color: transparent; border: none;" type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <form id="delete-giravee-form">
+                <input type="hidden" id="delete-giravee-id" name="delete-giravee-id">
+
+                <div class="form-group">
+                    <h6 id="delete-giravee-confirmation">Are you sure you want to delete this giravee?</h6>
+                </div>
+            </form>
+        </div>
+
+        <div class="modal-footer justify-content-center">
+            <button id="delete-giravee-button" type="button" class="btn btn-primary" form="delete-giravee-form" data-url="{% url 'delete-giravee' %}">
+                Yes
+            </button>
+            <button id="cancel-button-edit" type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="popup-show" class="modal" style="display: none;">
+    <div class="modal-content" style="height: 100%;">
+        <div class="modal-header">
+            <h5 class="modal-title" style="text-align: center; margin: 0 auto;">Giravee Details</h5>
+            <button style="background-color: transparent; border: none;" type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <div class="modal-body" id="giravee-details-content"></div>
+
+        <div class="modal-footer justify-content-center">
+            <button id="ok-button-show" type="button" class="btn btn-danger" data-dismiss="modal">OK</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+
+<script src="{% static 'stock/js/common.js' %}"></script>
+<script src="{% static 'giravee/js/index.js' %}"></script>
+
+{% endblock %}
