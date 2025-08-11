@@ -1,13 +1,13 @@
 @echo off
 
 REM Create virtual environment if not already
-if not exist "ims_env\Scripts\activate.bat" (
+if not exist "venv\Scripts\activate.bat" (
     echo Creating virtual environment...
-    python -m venv ims_env
+    python -m venv venv
 )
 
 REM Activate virtual environment
-call ims_env\Scripts\activate.bat
+call venv\Scripts\activate.bat
 
 REM Upgrade pip to latest
 python -m pip install --upgrade pip >nul 2>&1
