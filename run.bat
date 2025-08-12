@@ -14,7 +14,7 @@ python -m pip install --upgrade pip >nul 2>&1
 
 REM Pull latest changes from GitHub
 echo Checking for an update...
-git pull
+git pull origin main
 
 REM Install project requirements
 python -m pip install -r requirements.txt >nul 2>&1

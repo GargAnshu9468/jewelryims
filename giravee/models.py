@@ -18,7 +18,6 @@ class Giravee(models.Model):
     locker_number = models.CharField(max_length=2, choices=LockerNumberChoices.choices(), default='1')
     start_date = models.DateField(default=date.today)
     is_cleared = models.BooleanField(default=False)
-    is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

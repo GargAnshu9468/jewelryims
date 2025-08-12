@@ -192,6 +192,11 @@
                                 </select>
                             </div>
                         </div>
+
+                        <div class="col">
+                            <label for="add-stock-date">Date:</label>
+                            <input type="date" class="form-control" id="add-stock-date" name="add-stock-date" value="{{ today|date:'Y-m-d' }}">
+                        </div>
                     </div>
                 </form>
             </div>
@@ -296,6 +301,11 @@
                                     {% endfor %}
                                 </select>
                             </div>
+                        </div>
+
+                        <div class="col">
+                            <label for="edit-stock-date">Date:</label>
+                            <input type="date" class="form-control" id="edit-stock-date" name="edit-stock-date">
                         </div>
                     </div>
                 </form>

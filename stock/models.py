@@ -1,6 +1,7 @@
 from .constants import MaterialChoices, CategoryChoices, KaratChoices
 from django.utils import timezone
 from django.db import models
+from datetime import date
 
 
 class Stock(models.Model):
@@ -25,7 +26,7 @@ class Stock(models.Model):
         choices=KaratChoices.choices(),
         default=KaratChoices.TWENTY_FOUR.value
     )
-    is_deleted = models.BooleanField(default=False)
+    date = models.DateField(default=date.today)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

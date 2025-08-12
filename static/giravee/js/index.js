@@ -59,6 +59,7 @@ function handleGiraveesData(response) {
     $('#edit-giravee-due-amount').val(giravees[0].due_amount);
     $('#edit-giravee-due-amount-without-interest').val(giravees[0].due_amount_without_interest);
     $('#edit-giravee-locker-number').val(giravees[0].locker_number);
+    $('#edit-giravee-start-date').val(giravees[0].start_date);
 
     var tbody = $('#transaction-history-body');
     tbody.empty();
@@ -104,6 +105,7 @@ $(document).ready(function() {
             giraveeInfo.weight = $('#add-giravee-weight').val();
             giraveeInfo.interest_rate = $('#add-giravee-interest-rate').val();
             giraveeInfo.locker_number = $('#add-giravee-locker-number').val();
+            giraveeInfo.start_date = $('#add-giravee-start-date').val();
         } else if (activeModal === 'popup-edit') {
             giraveeInfo.id = $('#edit-giravee-id').val();
             giraveeInfo.name = $('#edit-giravee-name').val();
@@ -114,6 +116,7 @@ $(document).ready(function() {
             giraveeInfo.locker_number = $('#edit-giravee-locker-number').val();
             giraveeInfo.add_amount = $('#edit-giravee-add-amount').val();
             giraveeInfo.add_note = $('#edit-giravee-add-note').val();
+            giraveeInfo.start_date = $('#edit-giravee-start-date').val();
         } else if (activeModal === 'popup-delete') {
             giraveeInfo.id = $('#delete-giravee-id').val();
         }
@@ -364,7 +367,7 @@ $(document).ready(function() {
             popupContent += '<p class="giravee-detail"><span class="giravee-label">Weight:</span> ' + giravee.weight + '</p>';
             popupContent += '<p class="giravee-detail"><span class="giravee-label">Interest Rate:</span> ' + giravee.interest_rate + '</p>';
             popupContent += '<p class="giravee-detail"><span class="giravee-label">Locker Number:</span> ' + giravee.locker_number + '</p>';
-            popupContent += '<p class="giravee-detail"><span class="giravee-label">Date:</span> ' + formatDate(giravee.created_at) + '</p>';
+            popupContent += '<p class="giravee-detail"><span class="giravee-label">Date:</span> ' + formatDate(giravee.start_date) + '</p>';
 
             popupContent += '</div>';
 

@@ -5,6 +5,7 @@ from django.db.models import Sum
 from stock.models import Stock
 from django.db import models
 from decimal import Decimal
+from datetime import date
 
 
 class Supplier(models.Model):
@@ -13,7 +14,7 @@ class Supplier(models.Model):
     address = models.CharField(max_length=200, blank=True, null=True)
     email = models.EmailField(max_length=254, blank=True, null=True)
     gstin = models.CharField(max_length=15, blank=True, null=True)
-    is_deleted = models.BooleanField(default=False)
+    date = models.DateField(default=date.today)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -98,6 +99,7 @@ class PurchaseItem(models.Model):
     weight = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     perprice = models.IntegerField(default=1)
     totalprice = models.IntegerField(default=1)
+    date = models.DateField(default=date.today)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -266,6 +268,7 @@ class SaleItem(models.Model):
     weight = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     perprice = models.IntegerField(default=1)
     totalprice = models.IntegerField(default=1)
+    date = models.DateField(default=date.today)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -359,10 +362,11 @@ def update_sale_bill_details(sender, instance, **kwargs):
 
 class Customer(models.Model):
     name = models.CharField(max_length=150)
-    phone = models.CharField(max_length=12, unique=True)
-    address = models.CharField(max_length=200)
+    phone = models.CharField(max_length=12, blank=True, null=True)
+    address = models.CharField(max_length=200, blank=True, null=True)
     email = models.EmailField(max_length=254, blank=True, null=True)
     gstin = models.CharField(max_length=15, blank=True, null=True)
+    date = models.DateField(default=date.today)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

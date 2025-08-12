@@ -3,18 +3,18 @@ from .constants import MaterialChoices, CategoryChoices, KaratChoices
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.http import require_POST
+from giravee.utils import parse_fields_from_request
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.db import models
 from .models import Stock
 
 
 @login_required
 def stock(request):
 
-    stocks_list = list(Stock.objects.filter(is_deleted=False).order_by('-updated_at'))
+    stocks_list = Stock.objects.filter().order_by('-date')
 
-    paginator = Paginator(stocks_list, 6)
+    paginator = Paginator(list(stocks_list), 6)
     page_number = request.GET.get('page')
 
     try:
@@ -46,42 +46,21 @@ def stock(request):
 @login_required
 @require_POST
 def get_stocks(request):
-    stock_id = request.POST.get('id')
-    filter_attr = {'is_deleted': False}
 
-    if stock_id:
-        filter_attr['id'] = stock_id
-
-    stocks_list = Stock.objects.filter(**filter_attr).values()
+    stocks_list = Stock.objects.filter().values()
     return JsonResponse({'stocks': list(stocks_list)})
 
 
 @login_required
 @require_POST
 def add_stock(request):
-    data = request.POST.dict()
-
-    valid_fields = {field.name for field in Stock._meta.fields}
-    stock_data = {}
-
-    for key, value in data.items():
-        if key in valid_fields:
-            field = Stock._meta.get_field(key)
-
-            if isinstance(field, models.IntegerField):
-                stock_data[key] = int(value) if value else 0
-
-            elif isinstance(field, models.DecimalField):
-                stock_data[key] = float(value) if value else 0
-
-            elif isinstance(field, models.BooleanField):
-                stock_data[key] = value.lower() in ['true', '1']
-
-            else:
-                stock_data[key] = value
 
     try:
-        stock = Stock.objects.create(**stock_data)
+        data = request.POST.dict()
+        parsed_data = parse_fields_from_request(data, Stock)
+
+        Stock.objects.create(**parsed_data)
+
         return JsonResponse({'status': 'success', 'message': 'Stock added successfully'})
 
     except Exception as e:
@@ -91,47 +70,30 @@ def add_stock(request):
 @login_required
 @require_POST
 def edit_stock(request):
-    stock_id = request.POST.get('id')
-
-    if not stock_id:
-        return JsonResponse({'status': 'error', 'message': 'Stock ID is required.'}, status=400)
 
     try:
+        data = request.POST.dict()
+        stock_id = data.get('id')
+
+        if not stock_id:
+            return JsonResponse({'status': 'error', 'message': 'Stock ID is required.'}, status=400)
+
         stock = Stock.objects.get(id=stock_id)
+        parsed_data = parse_fields_from_request(data, Stock)
+
+        for key, value in parsed_data.items():
+            if key != 'id':
+                setattr(stock, key, value)
+
+        stock.save()
 
     except ObjectDoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Stock with the provided ID does not exist.'}, status=404)
-
-    data = request.POST.dict()
-
-    valid_fields = {field.name for field in Stock._meta.fields}
-    updated_fields = {}
-
-    for key, value in data.items():
-        if key in valid_fields and key != 'id':
-            field = Stock._meta.get_field(key)
-
-            if isinstance(field, models.IntegerField):
-                updated_fields[key] = int(value) if value else 0
-
-            elif isinstance(field, models.DecimalField):
-                updated_fields[key] = float(value) if value else 0
-
-            elif isinstance(field, models.BooleanField):
-                updated_fields[key] = value.lower() in ['true', '1']
-
-            else:
-                updated_fields[key] = value
-
-    for key, value in updated_fields.items():
-        setattr(stock, key, value)
-
-    try:
-        stock.save()
-        return JsonResponse({'status': 'success', 'message': 'Stock updated successfully.'})
+        return JsonResponse({'status': 'error', 'message': 'Stock not found.'}, status=404)
 
     except Exception as e:
-        return JsonResponse({'status': 'error', 'message': f'Error updating stock: {str(e)}'}, status=500)
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'success', 'message': 'Stock updated successfully.'})
 
 
 @login_required
@@ -140,17 +102,20 @@ def delete_stock(request):
 
     stock_id = request.POST.get('id')
 
+    if not stock_id:
+        return JsonResponse({'status': 'error', 'message': 'Stock ID is required.'}, status=400)
+
     try:
         stock = Stock.objects.get(id=stock_id)
         stock.delete()
 
     except ObjectDoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Stock with the provided ID does not exist.'}, status=404)
+        return JsonResponse({'status': 'error', 'message': 'Stock not found.'}, status=404)
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-    return JsonResponse({'message': 'Stock deleted successfully.'})
+    return JsonResponse({'status': 'success', 'message': 'Stock deleted successfully.'})
 
 
 @login_required
@@ -160,9 +125,9 @@ def search_stock(request):
     search_text = request.POST.get('search_text', '')
 
     if not search_text:
-        return JsonResponse({'status': 'error', 'message': 'Invalid data provided'}, status=400)
+        return JsonResponse({'status': 'error', 'message': 'Search term missing'}, status=400)
 
-    stocks_list = Stock.objects.filter(name__icontains=search_text)
-    stocks = render(request, 'stock/stock-search.html', {'stocks': stocks_list}).content.decode('utf-8')
+    stocks_list = Stock.objects.filter(name__icontains=search_text).order_by('-date')
+    stocks = render(request, 'stock/stock-search.html', {'stocks': list(stocks_list)}).content.decode('utf-8')
 
     return JsonResponse({'stocks': stocks})

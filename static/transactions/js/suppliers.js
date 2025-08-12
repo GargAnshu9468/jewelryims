@@ -37,6 +37,7 @@ $(document).ready(function() {
             supplierInfo.address = $('#add-supplier-address').val();
             supplierInfo.email = $('#add-supplier-email').val();
             supplierInfo.gstin = $('#add-supplier-gstin').val();
+            supplierInfo.date = $('#add-supplier-date').val();
         } else if (activeModal === 'popup-edit') {
             supplierInfo.id = $('#edit-supplier-id').val();
             supplierInfo.name = $('#edit-supplier-name').val();
@@ -44,6 +45,7 @@ $(document).ready(function() {
             supplierInfo.address = $('#edit-supplier-address').val();
             supplierInfo.email = $('#edit-supplier-email').val();
             supplierInfo.gstin = $('#edit-supplier-gstin').val();
+            supplierInfo.date = $('#edit-supplier-date').val();
         } else if (activeModal === 'popup-delete') {
             supplierInfo.id = $('#delete-supplier-id').val();
         }
@@ -65,9 +67,9 @@ $(document).ready(function() {
 
         var row = $(this).closest('tr');
         var supplierID = row.find('td:eq(0) p').text().trim();
-        var supplierName = row.find('td:eq(1) p').text().trim();
-        var supplierPhone = row.find('td:eq(2) p').text().trim();
-        var supplierGSTIN = row.find('td:eq(3) p').text().trim();
+        // var supplierName = row.find('td:eq(1) p').text().trim();
+        // var supplierPhone = row.find('td:eq(2) p').text().trim();
+        // var supplierGSTIN = row.find('td:eq(3) p').text().trim();
 
         var url = $(this).data('url');
         var csrftoken = getCookie('csrftoken');
@@ -75,17 +77,25 @@ $(document).ready(function() {
         fetchSupplierDetails(url, csrftoken, supplierID, function(response) {
             var supplierAddress = response.address;
             var supplierEmail = response.email;
+            var supplierName = response.name;
+            var supplierPhone = response.phone;
+            var supplierGSTIN = response.gstin;
+            var supplierDate = response.date;
 
             $('#edit-supplier-email').val(supplierEmail);
             $('#edit-supplier-address').val(supplierAddress);
+            $('#edit-supplier-name').val(supplierName);
+            $('#edit-supplier-phone').val(supplierPhone);
+            $('#edit-supplier-gstin').val(supplierGSTIN);
+            $('#edit-supplier-date').val(supplierDate);
         }, function(xhr, status, error) {
             swal("Error", "Error updating supplier info: " + error, "error");
         });
 
         $('#edit-supplier-id').val(supplierID);
-        $('#edit-supplier-name').val(supplierName);
-        $('#edit-supplier-phone').val(supplierPhone);
-        $('#edit-supplier-gstin').val(supplierGSTIN);
+        // $('#edit-supplier-name').val(supplierName);
+        // $('#edit-supplier-phone').val(supplierPhone);
+        // $('#edit-supplier-gstin').val(supplierGSTIN);
 
         showModal('popup-edit');
     });
@@ -280,6 +290,7 @@ $(document).ready(function() {
             popupContent += '<p class="supplier-detail"><span class="supplier-label">Address:</span> ' + response.address + '</p>';
             popupContent += '<p class="supplier-detail"><span class="supplier-label">Email:</span> ' + response.email + '</p>';
             popupContent += '<p class="supplier-detail"><span class="supplier-label">GSTIN No:</span> ' + response.gstin + '</p>';
+            popupContent += '<p class="supplier-detail"><span class="supplier-label">Date:</span> ' + response.date + '</p>';
 
             popupContent += '</div>';
 

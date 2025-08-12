@@ -3,18 +3,20 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.core.exceptions import ObjectDoesNotExist
+from giravee.utils import parse_fields_from_request
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.db import transaction
+from giravee.utils import Trim
 from decimal import Decimal
 
 
 @login_required
 def suppliers(request):
 
-    suppliers_list = list(Supplier.objects.filter(is_deleted=False).order_by('-updated_at'))
+    suppliers_list = Supplier.objects.filter().order_by('-date')
 
-    paginator = Paginator(suppliers_list, 6)
+    paginator = Paginator(list(suppliers_list), 6)
     page_number = request.GET.get('page')
 
     try:
@@ -44,7 +46,8 @@ def suppliers(request):
 @login_required
 @require_POST
 def get_suppliers(request):
-    suppliers_list = Supplier.objects.filter(is_deleted=False).values('id', 'name', 'phone', 'address', 'email', 'gstin')
+
+    suppliers_list = Supplier.objects.filter().values()
     return JsonResponse({'suppliers': list(suppliers_list)})
 
 
@@ -52,10 +55,11 @@ def get_suppliers(request):
 @require_POST
 def new_supplier(request):
 
-    attr_dict = request.POST.dict()
-
     try:
-        Supplier.objects.create(**attr_dict)
+        data = request.POST.dict()
+        parsed_data = parse_fields_from_request(data, Supplier)
+
+        Supplier.objects.create(**parsed_data)
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': f'Error adding supplier: {str(e)}'}, status=500)
@@ -67,40 +71,29 @@ def new_supplier(request):
 @require_POST
 def edit_supplier(request):
 
-    supplier_id = request.POST.get('id')
-    supplier_name = request.POST.get('name')
-    supplier_phone = request.POST.get('phone')
-    supplier_email = request.POST.get('email')
-    supplier_gstin = request.POST.get('gstin')
-    supplier_address = request.POST.get('address')
-
     try:
-        supplier = Supplier.objects.get(pk=supplier_id)
+        data = request.POST.dict()
+        supplier_id = data.get('id')
 
-        if supplier_name:
-            supplier.name = supplier_name
+        if not supplier_id:
+            return JsonResponse({'status': 'error', 'message': 'Supplier ID is required.'}, status=400)
+    
+        supplier = Supplier.objects.get(id=supplier_id)
+        parsed_data = parse_fields_from_request(data, Supplier)
 
-        if supplier_phone:
-            supplier.phone = supplier_phone
-
-        if supplier_email:
-            supplier.email = supplier_email
-
-        if supplier_gstin:
-            supplier.gstin = supplier_gstin
-
-        if supplier_address:
-            supplier.address = supplier_address
+        for key, value in parsed_data.items():
+            if key != 'id':
+                setattr(supplier, key, value)
 
         supplier.save()
 
     except ObjectDoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Supplier with the provided ID does not exist.'}, status=404)
+        return JsonResponse({'status': 'error', 'message': 'Supplier not found.'}, status=404)
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-    return JsonResponse({'message': 'Supplier updated successfully.'})
+    return JsonResponse({'status': 'success', 'message': 'Supplier updated successfully.'})
 
 
 @login_required
@@ -109,17 +102,20 @@ def delete_supplier(request):
 
     supplier_id = request.POST.get('id')
 
+    if not supplier_id:
+        return JsonResponse({'status': 'error', 'message': 'Supplier ID is required.'}, status=400)
+
     try:
         supplier = Supplier.objects.get(id=supplier_id)
         supplier.delete()
 
     except ObjectDoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Supplier with the provided ID does not exist.'}, status=404)
+        return JsonResponse({'status': 'error', 'message': 'Supplier not found.'}, status=404)
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-    return JsonResponse({'message': 'Supplier deleted successfully.'})
+    return JsonResponse({'status': 'success', 'message': 'Supplier deleted successfully.'})
 
 
 @login_required
@@ -128,22 +124,15 @@ def supplier_details(request):
 
     supplier_id = request.POST.get('id')
 
-    try:
-        supplier = Supplier.objects.get(id=supplier_id)
+    if not supplier_id:
+        return JsonResponse({'status': 'error', 'message': 'Supplier ID is required.'}, status=400)
 
-        data = {
-            'id': supplier.id,
-            'name': supplier.name,
-            'phone': supplier.phone,
-            'email': supplier.email,
-            'gstin': supplier.gstin,
-            'address': supplier.address,
-        }
+    supplier = Supplier.objects.filter(id=supplier_id).values().first()
 
-    except ObjectDoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Supplier with the provided ID does not exist.'}, status=404)
+    if not supplier:
+        return JsonResponse({'status': 'error', 'message': 'Supplier not found.'}, status=404)
 
-    return JsonResponse(data)
+    return JsonResponse(supplier)
 
 
 @login_required
@@ -153,10 +142,10 @@ def search_supplier(request):
     search_text = request.POST.get('search_text', '')
 
     if not search_text:
-        return JsonResponse({'status': 'error', 'message': 'Invalid data provided'}, status=400)
+        return JsonResponse({'status': 'error', 'message': 'Search term missing'}, status=400)
 
-    suppliers_list = Supplier.objects.filter(name__icontains=search_text)
-    suppliers = render(request, 'transactions/supplier-search.html', {'suppliers': suppliers_list}).content.decode('utf-8')
+    suppliers_list = Supplier.objects.filter(name__icontains=search_text).order_by('-date')
+    suppliers = render(request, 'transactions/supplier-search.html', {'suppliers': list(suppliers_list)}).content.decode('utf-8')
 
     return JsonResponse({'suppliers': suppliers})
 
@@ -164,9 +153,9 @@ def search_supplier(request):
 @login_required
 def purchases(request):
 
-    purchases_list = list(PurchaseItem.objects.filter().order_by('-updated_at'))
+    purchases_list = PurchaseItem.objects.filter().order_by('-date')
 
-    paginator = Paginator(purchases_list, 6)
+    paginator = Paginator(list(purchases_list), 6)
     page_number = request.GET.get('page')
 
     try:
@@ -269,12 +258,6 @@ def new_purchase(request):
 
                 stock = Stock.objects.get(id=stock_id)
 
-                # stock.quantity += quantity
-                # stock.weight = float(stock.weight or 0) + weight
-                # stock.purchase_price = float(stock.purchase_price or 0) + total_price
-
-                # stock.save()
-
                 PurchaseItem.objects.create(
                     billno=purchase_bill,
                     stock=stock,
@@ -305,6 +288,9 @@ def get_purchase(request):
 
     purchase_id = request.POST.get('id')
 
+    if not purchase_id:
+        return JsonResponse({'status': 'error', 'message': 'Purchase ID is required.'}, status=400)
+
     purchase = PurchaseItem.objects.filter(billno=purchase_id).values(
         'billno__billno',
         'billno__time',
@@ -332,23 +318,12 @@ def get_purchase(request):
         'billno__labour_making_charge_note',
     )
 
-    try:
-        tax_details = PurchaseBillDetails.objects.get(billno_id=purchase_id)
+    tax_details = PurchaseBillDetails.objects.filter(billno_id=purchase_id).values().first()
 
-        tax_details_dict = {
-            'gst': tax_details.gst,
-            'gst_amount': tax_details.gst_amount,
-            'total': tax_details.total,
-            'total_after_discount': tax_details.total_after_discount,
-            'total_discount': tax_details.total_discount,
-            'total_labour_making_charge': tax_details.total_labour_making_charge,
-            'total_weight': tax_details.total_weight
-        }
+    if not tax_details:
+        tax_details = {}
 
-    except PurchaseBillDetails.DoesNotExist:
-        tax_details_dict = {}
-
-    return JsonResponse({'purchase': list(purchase), 'tax_details': tax_details_dict})
+    return JsonResponse({'purchase': list(purchase), 'tax_details': tax_details})
 
 
 @login_required
@@ -356,10 +331,14 @@ def get_purchase(request):
 def update_purchase(request):
 
     purchase_id = request.POST.get('id')
+
+    if not purchase_id:
+        return JsonResponse({'success': False, 'message': 'Purchase ID is required.'}, status=400)
+
     total_after_discount = request.POST.get('total_after_discount')
+    remaining_amount = request.POST.get('remaining_amount')
     total_discount = request.POST.get('total_discount')
     payment_amount = request.POST.get('payment_amount')
-    remaining_amount = request.POST.get('remaining_amount')
 
     try:
         purchase_details = PurchaseBillDetails.objects.get(billno=purchase_id)
@@ -393,6 +372,9 @@ def delete_purchase(request):
 
     purchase_id = request.POST.get('id')
 
+    if not purchase_id:
+        return JsonResponse({'status': 'error', 'message': 'Purchase ID is required.'}, status=400)
+
     try:
         purchase = PurchaseBill.objects.get(pk=purchase_id)
         purchase.delete()
@@ -413,9 +395,9 @@ def search_purchase(request):
     search_text = request.POST.get('search_text', '')
 
     if not search_text:
-        return JsonResponse({'status': 'error', 'message': 'Invalid data provided'}, status=400)
+        return JsonResponse({'status': 'error', 'message': 'Search term missing'}, status=400)
 
-    purchases_list = list(PurchaseItem.objects.filter(billno__supplier__name__icontains=search_text))
+    purchases_list = PurchaseItem.objects.filter(billno__supplier__name__icontains=search_text).order_by('-date')
     purchases = render(request, 'transactions/purchase-search.html', {'purchases': list(purchases_list)}).content.decode('utf-8')
 
     return JsonResponse({'purchases': purchases})
@@ -424,9 +406,9 @@ def search_purchase(request):
 @login_required
 def sales(request):
 
-    sales_list = list(SaleItem.objects.filter().order_by('-updated_at'))
+    sales_list = SaleItem.objects.filter().order_by('-date')
 
-    paginator = Paginator(sales_list, 6)
+    paginator = Paginator(list(sales_list), 6)
     page_number = request.GET.get('page')
 
     try:
@@ -510,8 +492,10 @@ def new_sale(request):
         try:
             customer = None
 
-            if customer_data['phone']:
-                customer = Customer.objects.filter(phone=customer_data['phone']).first()
+            if customer_data['name']:
+                customer = Customer.objects.annotate(
+                    trimmed_name=Trim('name')
+                ).filter(trimmed_name__iexact=customer_data['name'].strip()).first()
 
             if not customer:
                 customer = Customer.objects.create(
@@ -575,6 +559,9 @@ def get_sale(request):
 
     sale_id = request.POST.get('id')
 
+    if not sale_id:
+        return JsonResponse({'status': 'error', 'message': 'Sale ID is required.'}, status=400)
+
     sale = SaleItem.objects.filter(billno=sale_id).values(
         'billno__billno',
         'billno__time',
@@ -602,23 +589,12 @@ def get_sale(request):
         'billno__labour_making_charge_note',
     )
 
-    try:
-        tax_details = SaleBillDetails.objects.get(billno_id=sale_id)
+    tax_details = SaleBillDetails.objects.filter(billno_id=sale_id).values().first()
 
-        tax_details_dict = {
-            'gst': tax_details.gst,
-            'gst_amount': tax_details.gst_amount,
-            'total': tax_details.total,
-            'total_after_discount': tax_details.total_after_discount,
-            'total_discount': tax_details.total_discount,
-            'total_labour_making_charge': tax_details.total_labour_making_charge,
-            'total_weight': tax_details.total_weight
-        }
+    if not tax_details:
+        tax_details = {}
 
-    except SaleBillDetails.DoesNotExist:
-        tax_details_dict = {}
-
-    return JsonResponse({'sale': list(sale), 'tax_details': tax_details_dict})
+    return JsonResponse({'sale': list(sale), 'tax_details': tax_details})
 
 
 @login_required
@@ -626,10 +602,14 @@ def get_sale(request):
 def update_sale(request):
 
     sale_id = request.POST.get('id')
+
+    if not sale_id:
+        return JsonResponse({'success': False, 'message': 'Sale ID is required.'}, status=400)
+
     total_after_discount = request.POST.get('total_after_discount')
+    remaining_amount = request.POST.get('remaining_amount')
     total_discount = request.POST.get('total_discount')
     payment_amount = request.POST.get('payment_amount')
-    remaining_amount = request.POST.get('remaining_amount')
 
     try:
         sale_details = SaleBillDetails.objects.get(billno=sale_id)
@@ -660,7 +640,11 @@ def update_sale(request):
 @login_required
 @require_POST
 def delete_sale(request):
+
     sale_id = request.POST.get('id')
+
+    if not sale_id:
+        return JsonResponse({'status': 'error', 'message': 'Sale ID is required.'}, status=400)
 
     try:
         sale = SaleBill.objects.get(pk=sale_id)
@@ -694,9 +678,9 @@ def search_sale(request):
     search_text = request.POST.get('search_text', '')
 
     if not search_text:
-        return JsonResponse({'status': 'error', 'message': 'Invalid data provided'}, status=400)
+        return JsonResponse({'status': 'error', 'message': 'Search term missing'}, status=400)
 
-    sales_list = list(SaleItem.objects.filter(billno__customer__name__icontains=search_text))
+    sales_list = SaleItem.objects.filter(billno__customer__name__icontains=search_text).order_by('-date')
     sales = render(request, 'transactions/sale-search.html', {'sales': list(sales_list)}).content.decode('utf-8')
 
     return JsonResponse({'sales': sales})
@@ -705,9 +689,9 @@ def search_sale(request):
 @login_required
 def customers(request):
 
-    customer_list = list(Customer.objects.filter().order_by('-updated_at'))
+    customer_list = Customer.objects.filter().order_by('-date')
 
-    paginator = Paginator(customer_list, 6)
+    paginator = Paginator(list(customer_list), 6)
     page_number = request.GET.get('page')
 
     try:
@@ -738,10 +722,11 @@ def customers(request):
 @require_POST
 def new_customer(request):
 
-    attr_dict = request.POST.dict()
+    data = request.POST.dict()
 
     try:
-        Customer.objects.create(**attr_dict)
+        parsed_data = parse_fields_from_request(data, Customer)
+        Customer.objects.create(**parsed_data)
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': f'Error adding customer: {str(e)}'}, status=500)
@@ -752,7 +737,8 @@ def new_customer(request):
 @login_required
 @require_POST
 def get_customers(request):
-    customers_list = Customer.objects.filter().values('id', 'name', 'phone', 'address', 'email', 'gstin')
+
+    customers_list = Customer.objects.filter().values()
     return JsonResponse({'customers': list(customers_list)})
 
 
@@ -760,40 +746,29 @@ def get_customers(request):
 @require_POST
 def edit_customer(request):
 
-    customer_id = request.POST.get('id')
-    customer_name = request.POST.get('name')
-    customer_phone = request.POST.get('phone')
-    customer_email = request.POST.get('email')
-    customer_gstin = request.POST.get('gstin')
-    customer_address = request.POST.get('address')
-
     try:
+        data = request.POST.dict()
+        customer_id = data.get('id')
+
+        if not customer_id:
+            return JsonResponse({'status': 'error', 'message': 'Customer ID is required.'}, status=400)
+
         customer = Customer.objects.get(pk=customer_id)
+        parsed_data = parse_fields_from_request(data, Customer)
 
-        if customer_name:
-            customer.name = customer_name
-
-        if customer_phone:
-            customer.phone = customer_phone
-
-        if customer_email:
-            customer.email = customer_email
-
-        if customer_gstin:
-            customer.gstin = customer_gstin
-
-        if customer_address:
-            customer.address = customer_address
+        for key, value in parsed_data.items():
+            if key != 'id':
+                setattr(customer, key, value)
 
         customer.save()
 
-    except ObjectDoesNotExist as e1:
-        return JsonResponse({'status': 'error', 'message': 'Customer with the provided ID does not exist.'}, status=404)
+    except ObjectDoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Customer not found.'}, status=404)
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-    return JsonResponse({'message': 'Customer updated successfully.'})
+    return JsonResponse({'status': 'success', 'message': 'Customer updated successfully.'})
 
 
 @login_required
@@ -802,17 +777,20 @@ def delete_customer(request):
 
     customer_id = request.POST.get('id')
 
+    if not customer_id:
+        return JsonResponse({'status': 'error', 'message': 'Customer ID is required.'}, status=400)
+
     try:
         customer = Customer.objects.get(id=customer_id)
         customer.delete()
 
     except ObjectDoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Customer with the provided ID does not exist.'}, status=404)
+        return JsonResponse({'status': 'error', 'message': 'Customer not found.'}, status=404)
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-    return JsonResponse({'message': 'Customer deleted successfully.'})
+    return JsonResponse({'status': 'success', 'message': 'Customer deleted successfully.'})
 
 
 @login_required
@@ -821,23 +799,15 @@ def customer_details(request):
 
     customer_id = request.POST.get('id')
 
-    try:
-        customer = Customer.objects.get(id=customer_id)
+    if not customer_id:
+        return JsonResponse({'status': 'error', 'message': 'Customer ID is required.'}, status=400)
 
-        data = {
-            'id': customer.id,
-            'name': customer.name,
-            'phone': customer.phone,
-            'email': customer.email,
-            'gstin': customer.gstin,
-            'address': customer.address,
-            'created_at': customer.created_at
-        }
+    customer = Customer.objects.filter(id=customer_id).values().first()
 
-    except ObjectDoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Customer with the provided ID does not exist.'}, status=404)
+    if not customer:
+        return JsonResponse({'status': 'error', 'message': 'Customer not found.'}, status=404)
 
-    return JsonResponse(data)
+    return JsonResponse(customer)
 
 
 @login_required
@@ -847,12 +817,13 @@ def search_customer(request):
     search_text = request.POST.get('search_text', '')
 
     if not search_text:
-        return JsonResponse({'status': 'error', 'message': 'Invalid data provided'}, status=400)
+        return JsonResponse({'status': 'error', 'message': 'Search term missing'}, status=400)
 
-    customers_list = Customer.objects.filter(name__icontains=search_text)
-    customers = render(request, 'transactions/customer-search.html', {'customers': customers_list}).content.decode('utf-8')
+    customers_list = Customer.objects.filter(name__icontains=search_text).order_by('-date')
+    customers = render(request, 'transactions/customer-search.html', {'customers': list(customers_list)}).content.decode('utf-8')
 
     return JsonResponse({'customers': customers})
+
 
 @login_required
 @require_POST
@@ -861,7 +832,7 @@ def customer_suggestions(request):
     query = request.POST.get('query', '')
 
     if not query:
-        return JsonResponse({'status': 'error', 'message': 'Invalid data provided'}, status=400)
+        return JsonResponse({'status': 'error', 'message': 'Suggestion query missing'}, status=400)
 
     customers_list = Customer.objects.filter(name__icontains=query).values('id', 'name')
     return JsonResponse(list(customers_list), safe=False)

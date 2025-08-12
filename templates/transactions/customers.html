@@ -75,7 +75,7 @@
                                             </td>
 
                                             <td>
-                                                <p class="text-xs font-weight-bold mb-0">{{ customer.created_at }}</p>
+                                                <p class="text-xs font-weight-bold mb-0">{{ customer.date }}</p>
                                             </td>
 
                                             <td class="align-middle">
@@ -160,6 +160,14 @@
                                     <input type="text" class="form-control" id="customer-gstin" name="customer-gstin">
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col">
+                                <label for="add-customer-date">Date:</label>
+                                <input type="date" class="form-control" id="add-customer-date" name="add-customer-date" value="{{ today|date:'Y-m-d' }}">
+                            </div>
+                        </div>
                     </form>
                 </div>
 
@@ -189,24 +197,35 @@
                         <input type="text" class="form-control" id="edit-customer-name" name="edit-customer-name">
                     </div>
 
-                    <div class="form-group">
-                        <label for="customer-phone">Phone No:</label>
-                        <input type="text" class="form-control" id="edit-customer-phone" name="edit-customer-phone">
+                    <div class="form-group row">
+                        <div class="col">
+                            <label for="customer-phone">Phone No:</label>
+                            <input type="text" class="form-control" id="edit-customer-phone" name="edit-customer-phone">
+                        </div>
+
+                        <div class="col">
+                            <label for="customer-email">Email:</label>
+                            <input type="text" class="form-control" id="edit-customer-email" name="edit-customer-email">
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="customer-email">Email:</label>
-                        <input type="text" class="form-control" id="edit-customer-email" name="edit-customer-email">
+                    <div class="form-group row">
+                        <div class="col">
+                            <label for="customer-address">Address:</label>
+                            <input type="text" class="form-control" id="edit-customer-address" name="edit-customer-address">
+                        </div>
+
+                        <div class="col">
+                            <label for="customer-gstin">GSTIN NO:</label>
+                            <input type="text" class="form-control" id="edit-customer-gstin" name="edit-customer-gstin">
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="customer-address">Address:</label>
-                        <input type="text" class="form-control" id="edit-customer-address" name="edit-customer-address">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="customer-gstin">GSTIN NO:</label>
-                        <input type="text" class="form-control" id="edit-customer-gstin" name="edit-customer-gstin">
+                    <div class="form-group row">
+                        <div class="col">
+                            <label for="edit-customer-date">Date:</label>
+                            <input type="date" class="form-control" id="edit-customer-date" name="edit-customer-date">
+                        </div>
                     </div>
                 </form>
             </div>

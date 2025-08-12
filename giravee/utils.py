@@ -1,4 +1,11 @@
+from django.db.models import Func
+from datetime import datetime
 from django.db import models
+
+
+class Trim(Func):
+    function = 'TRIM'
+    arity = 1
 
 
 def parse_fields_from_request(data, model_cls):
@@ -17,6 +24,9 @@ def parse_fields_from_request(data, model_cls):
 
             elif isinstance(field, models.BooleanField):
                 parsed[key] = value.lower() in ['true', '1']
+
+            elif isinstance(field, models.DateField):
+                parsed[key] = datetime.strptime(value, "%Y-%m-%d").date() if value else None
 
             else:
                 parsed[key] = value

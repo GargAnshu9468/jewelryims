@@ -13,9 +13,9 @@ from decimal import Decimal
 @login_required
 def giravee(request):
 
-    giravee_list = list(Giravee.objects.filter(is_deleted=False).order_by('-updated_at'))
+    giravee_list = Giravee.objects.filter().order_by('-start_date')
 
-    paginator = Paginator(giravee_list, 6)
+    paginator = Paginator(list(giravee_list), 6)
     page_number = request.GET.get('page')
 
     try:
@@ -45,13 +45,13 @@ def giravee(request):
 @login_required
 @require_POST
 def get_giravees(request):
+
     giravee_id = request.POST.get('id')
-    filter_attr = {'is_deleted': False}
 
-    if giravee_id:
-        filter_attr['id'] = giravee_id
+    if not giravee_id:
+        return JsonResponse({'status': 'error', 'message': 'Giravee ID is required.'}, status=400)
 
-    giravees = Giravee.objects.filter(**filter_attr)
+    giravees = Giravee.objects.filter(id=giravee_id)
     giravee_list = list(giravees.values())
 
     transactions_data = []
@@ -76,6 +76,7 @@ def get_giravees(request):
 @login_required
 @require_POST
 def add_giravee(request):
+
     try:
         data = request.POST.dict()
 
@@ -91,6 +92,7 @@ def add_giravee(request):
 @login_required
 @require_POST
 def edit_giravee(request):
+
     giravee_id = request.POST.get('id')
 
     if not giravee_id:
@@ -137,30 +139,35 @@ def edit_giravee(request):
 @login_required
 @require_POST
 def delete_giravee(request):
+
     giravee_id = request.POST.get('id')
+
+    if not giravee_id:
+        return JsonResponse({'status': 'error', 'message': 'Giravee ID is required.'}, status=400)
 
     try:
         giravee = Giravee.objects.get(id=giravee_id)
         giravee.delete()
 
     except ObjectDoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Giravee with the provided ID does not exist.'}, status=404)
+        return JsonResponse({'status': 'error', 'message': 'Giravee not found.'}, status=404)
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-    return JsonResponse({'message': 'Giravee deleted successfully.'})
+    return JsonResponse({'status': 'success', 'message': 'Giravee deleted successfully.'})
 
 
 @login_required
 @require_POST
 def search_giravee(request):
+
     search_text = request.POST.get('search_text', '')
 
     if not search_text:
-        return JsonResponse({'status': 'error', 'message': 'Search query missing'}, status=400)
+        return JsonResponse({'status': 'error', 'message': 'Search term missing'}, status=400)
 
-    giravee_list = Giravee.objects.filter(name__icontains=search_text, is_deleted=False)
+    giravee_list = Giravee.objects.filter(name__icontains=search_text).order_by('-start_date')
     giravees_html = render(request, 'giravee/giravee-search.html', {'giravees': giravee_list}).content.decode('utf-8')
 
     return JsonResponse({'giravees': giravees_html})
@@ -169,7 +176,11 @@ def search_giravee(request):
 @login_required
 @require_POST
 def refresh_giravee(request):
+
     giravee_id = request.POST.get('id')
+
+    if not giravee_id:
+        return JsonResponse({'status': 'error', 'message': 'Giravee ID is required.'}, status=400)
 
     try:
         giravee = Giravee.objects.get(id=giravee_id)

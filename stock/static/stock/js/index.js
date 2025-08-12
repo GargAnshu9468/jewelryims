@@ -56,6 +56,7 @@ function handleStocksData(response) {
     $('#edit-stock-material').val(stocks[0].material);
     $('#edit-stock-category').val(stocks[0].category);
     $('#edit-stock-karat').val(stocks[0].karat);
+    $('#edit-stock-date').val(stocks[0].date);
 }
 
 $(document).ready(function() {
@@ -83,6 +84,7 @@ $(document).ready(function() {
             stockInfo.material = $('#add-stock-material').val();
             stockInfo.category = $('#add-stock-category').val();
             stockInfo.karat = $('#add-stock-karat').val();
+            stockInfo.date = $('#add-stock-date').val();
         } else if (activeModal === 'popup-edit') {
             stockInfo.id = $('#edit-stock-id').val();
             stockInfo.name = $('#edit-stock-name').val();
@@ -93,6 +95,7 @@ $(document).ready(function() {
             stockInfo.material = $('#edit-stock-material').val();
             stockInfo.category = $('#edit-stock-category').val();
             stockInfo.karat = $('#edit-stock-karat').val();
+            stockInfo.date = $('#edit-stock-date').val();
         } else if (activeModal === 'popup-delete') {
             stockInfo.id = $('#delete-stock-id').val();
         }
@@ -314,6 +317,7 @@ $(document).ready(function() {
             popupContent += '<p class="stock-detail"><span class="stock-label">Material:</span> ' + stock.material + '</p>';
             popupContent += '<p class="stock-detail"><span class="stock-label">Category:</span> ' + stock.category + '</p>';
             popupContent += '<p class="stock-detail"><span class="stock-label">Karat:</span> ' + stock.karat + '</p>';
+            popupContent += '<p class="stock-detail"><span class="stock-label">Date:</span> ' + stock.date + '</p>';
 
             popupContent += '</div>';
 

@@ -37,6 +37,7 @@ $(document).ready(function() {
             customerInfo.address = $('#customer-address').val();
             customerInfo.email = $('#customer-email').val();
             customerInfo.gstin = $('#customer-gstin').val();
+            customerInfo.date = $('#add-customer-date').val();
         } else if (activeModal === 'popup-edit') {
             customerInfo.id = $('#edit-customer-id').val();
             customerInfo.name = $('#edit-customer-name').val();
@@ -44,6 +45,7 @@ $(document).ready(function() {
             customerInfo.address = $('#edit-customer-address').val();
             customerInfo.email = $('#edit-customer-email').val();
             customerInfo.gstin = $('#edit-customer-gstin').val();
+            customerInfo.date = $('#edit-customer-date').val();
         } else if (activeModal === 'popup-delete') {
             customerInfo.id = $('#delete-customer-id').val();
         }
@@ -65,9 +67,9 @@ $(document).ready(function() {
 
         var row = $(this).closest('tr');
         var customerID = row.find('td:eq(0) p').text().trim();
-        var customerName = row.find('td:eq(1) p').text().trim();
-        var customerPhone = row.find('td:eq(2) p').text().trim();
-        var customerGSTIN = row.find('td:eq(3) p').text().trim();
+        // var customerName = row.find('td:eq(1) p').text().trim();
+        // var customerPhone = row.find('td:eq(2) p').text().trim();
+        // var customerGSTIN = row.find('td:eq(3) p').text().trim();
 
         var url = $(this).data('url');
         var csrftoken = getCookie('csrftoken');
@@ -75,17 +77,25 @@ $(document).ready(function() {
         fetchCustomerDetails(url, csrftoken, customerID, function(response) {
             var customerAddress = response.address;
             var customerEmail = response.email;
+            var customerName = response.name;
+            var customerPhone = response.phone;
+            var customerGSTIN = response.gstin;
+            var customerDate = response.date;
 
             $('#edit-customer-email').val(customerEmail);
             $('#edit-customer-address').val(customerAddress);
+            $('#edit-customer-name').val(customerName);
+            $('#edit-customer-phone').val(customerPhone);
+            $('#edit-customer-gstin').val(customerGSTIN);
+            $('#edit-customer-date').val(customerDate);
         }, function(xhr, status, error) {
             swal("Error", "Error updating customer info: " + error, "error");
         });
 
         $('#edit-customer-id').val(customerID);
-        $('#edit-customer-name').val(customerName);
-        $('#edit-customer-phone').val(customerPhone);
-        $('#edit-customer-gstin').val(customerGSTIN);
+        // $('#edit-customer-name').val(customerName);
+        // $('#edit-customer-phone').val(customerPhone);
+        // $('#edit-customer-gstin').val(customerGSTIN);
 
         showModal('popup-edit');
     });
@@ -280,7 +290,7 @@ $(document).ready(function() {
             popupContent += '<p class="customer-detail"><span class="customer-label">Address:</span> ' + response.address + '</p>';
             popupContent += '<p class="customer-detail"><span class="customer-label">Email:</span> ' + response.email + '</p>';
             popupContent += '<p class="customer-detail"><span class="customer-label">GSTIN No:</span> ' + response.gstin + '</p>';
-            popupContent += '<p class="customer-detail"><span class="customer-label">Date:</span> ' + formatDate(response.created_at) + '</p>';
+            popupContent += '<p class="customer-detail"><span class="customer-label">Date:</span> ' + formatDate(response.date) + '</p>';
 
             popupContent += '</div>';
 
