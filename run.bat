@@ -1,5 +1,16 @@
 @echo off
 
+REM Initialize git if not already
+if not exist ".git" (
+    echo Initializing git...
+    git init
+    git remote add origin https://github.com/GargAnshu9468/jewelryims.git
+)
+
+REM Pull latest changes
+echo Checking for an update...
+git pull origin main
+
 REM Create virtual environment if not already
 if not exist "venv\Scripts\activate.bat" (
     echo Creating virtual environment...
@@ -11,10 +22,6 @@ call venv\Scripts\activate.bat
 
 REM Upgrade pip to latest
 python -m pip install --upgrade pip >nul 2>&1
-
-REM Pull latest changes from GitHub
-echo Checking for an update...
-git pull origin main
 
 REM Install project requirements
 python -m pip install -r requirements.txt >nul 2>&1
