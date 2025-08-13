@@ -5,6 +5,7 @@ if not exist ".git" (
     echo Initializing git...
     git init
     git remote add origin https://github.com/GargAnshu9468/jewelryims.git
+    echo Git initialized and remote added.
 )
 
 REM Pull latest changes
@@ -15,6 +16,7 @@ REM Create virtual environment if not already
 if not exist "venv\Scripts\activate.bat" (
     echo Creating virtual environment...
     python -m venv venv
+    echo Virtual environment created.
 )
 
 REM Activate virtual environment
