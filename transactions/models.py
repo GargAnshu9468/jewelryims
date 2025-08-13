@@ -1,6 +1,7 @@
 from stock.constants import DiscountChoices, PaymentMethodChoices, LabourOrMakingChargeChoices
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 from django.db.models import Sum
 from stock.models import Stock
 from django.db import models
@@ -24,7 +25,7 @@ class Supplier(models.Model):
 
 class PurchaseBill(models.Model):
     billno = models.AutoField(primary_key=True)
-    time = models.DateTimeField(auto_now=True)
+    time = models.DateField(default=date.today)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, related_name="purchasesupplier")
     payment_method = models.CharField(
         max_length=50,
@@ -193,7 +194,7 @@ def update_purchase_bill_details(sender, instance, **kwargs):
 
 class SaleBill(models.Model):
     billno = models.AutoField(primary_key=True)
-    time = models.DateTimeField(auto_now=True)
+    time = models.DateField(default=date.today)
     customer = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name="salebills")
     payment_method = models.CharField(
         max_length=50,

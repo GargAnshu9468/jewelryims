@@ -83,7 +83,10 @@ function calculatePrice() {
 function fetchSaleInformation() {
 
     var activeModal = $('.modal:visible');
-    var saleInfo = {};
+
+    var saleInfo = {
+        'time': $('#add-sale-date').val(),
+    };
 
     if (activeModal.attr('id') === 'popup-add') {
 
@@ -657,7 +660,7 @@ $(document).ready(function() {
             popupContent += '<p class="customer-detail"><span class="customer-label">Address:</span> ' + response.address + '</p>';
             popupContent += '<p class="customer-detail"><span class="customer-label">Email:</span> ' + response.email + '</p>';
             popupContent += '<p class="customer-detail"><span class="customer-label">GSTIN No:</span> ' + response.gstin + '</p>';
-            popupContent += '<p class="customer-detail"><span class="customer-label">Date:</span> ' + formatDate(response.created_at) + '</p>';
+            popupContent += '<p class="customer-detail"><span class="customer-label">Date:</span> ' + formatDate(response.date) + '</p>';
 
             popupContent += '</div>';
 

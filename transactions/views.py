@@ -8,6 +8,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.db import transaction
 from giravee.utils import Trim
+from datetime import datetime
 from decimal import Decimal
 
 
@@ -220,6 +221,14 @@ def new_purchase(request):
         'gst': Decimal(gst_raw) if gst_raw else Decimal('0.00'),
     }
 
+    other_data = {}
+
+    purchase_time_raw = request.POST.get('time')
+    purchase_time = datetime.strptime(purchase_time_raw, "%Y-%m-%d").date() if purchase_time_raw else None
+
+    if purchase_time:
+        other_data['time'] = purchase_time
+
     products_data = []
 
     for key in request.POST.keys():
@@ -244,7 +253,8 @@ def new_purchase(request):
                 supplier=supplier,
                 **payment_data,
                 **discount_data,
-                **charges_data
+                **charges_data,
+                **other_data
             )
 
             for product in products_data:
@@ -473,6 +483,14 @@ def new_sale(request):
         'gst': Decimal(gst_raw) if gst_raw else Decimal('0.00'),
     }
 
+    other_data = {}
+
+    sale_time_raw = request.POST.get('time')
+    sale_time = datetime.strptime(sale_time_raw, "%Y-%m-%d").date() if sale_time_raw else None
+
+    if sale_time:
+        other_data['time'] = sale_time
+
     products_data = []
 
     for key in request.POST.keys():
@@ -510,7 +528,8 @@ def new_sale(request):
                 customer=customer,
                 **payment_data,
                 **discount_data,
-                **charges_data
+                **charges_data,
+                **other_data
             )
 
             for product in products_data:
