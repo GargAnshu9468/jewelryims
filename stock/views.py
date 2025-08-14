@@ -60,7 +60,6 @@ def add_stock(request):
         parsed_data = parse_fields_from_request(data, Stock)
 
         Stock.objects.create(**parsed_data)
-
         return JsonResponse({'status': 'success', 'message': 'Stock added successfully'})
 
     except Exception as e:

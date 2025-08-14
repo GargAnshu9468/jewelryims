@@ -109,11 +109,12 @@ def edit_giravee(request):
 
         giravee.save()
 
-        add_amount = float(data.get('add_amount', 0))
+        add_amount = data.get('add_amount', 0)
         deposit_date = data.get('deposit_date')
         note = data.get('add_note', '')
 
         if add_amount and add_amount > 0:
+            add_amount = float(add_amount)
 
             txn_attrs = {
                 'giravee': giravee,
