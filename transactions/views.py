@@ -8,8 +8,6 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.db import transaction
 from giravee.utils import Trim
-from datetime import datetime
-from decimal import Decimal
 
 
 @login_required
@@ -202,32 +200,27 @@ def new_purchase(request):
 
     payment_data = {
         'payment_method': request.POST.get('paymentDetails[paymentMethod]'),
-        'payment_amount': Decimal(payment_amount_raw) if payment_amount_raw else Decimal('0.00')
+        'payment_amount': float(payment_amount_raw) if payment_amount_raw else 0
     }
 
     discount_data = {
         'discount_type': request.POST.get('discountDetails[discountType]'),
-        'discount_value': Decimal(discount_value_raw) if discount_value_raw else Decimal('0.00'),
+        'discount_value': float(discount_value_raw) if discount_value_raw else 0,
         'discount_note': request.POST.get('discountDetails[discountNote]')
     }
 
     charges_data = {
         'labour_making_charge_type': request.POST.get('chargeDetails[labourMakingChargeType]'),
-        'labour_making_charge_value': Decimal(labour_making_charge__value_raw) if labour_making_charge__value_raw else Decimal('0.00'),
+        'labour_making_charge_value': float(labour_making_charge__value_raw) if labour_making_charge__value_raw else 0,
         'labour_making_charge_note': request.POST.get('chargeDetails[labourMakingChargeNote]')
     }
 
     tax_data = {
-        'gst': Decimal(gst_raw) if gst_raw else Decimal('0.00'),
+        'gst': float(gst_raw) if gst_raw else 0,
     }
 
-    other_data = {}
-
-    purchase_time_raw = request.POST.get('time')
-    purchase_time = datetime.strptime(purchase_time_raw, "%Y-%m-%d").date() if purchase_time_raw else None
-
-    if purchase_time:
-        other_data['time'] = purchase_time
+    purchase_time = request.POST.get('time')
+    other_data = {'time': purchase_time} if purchase_time else {}
 
     products_data = []
 
@@ -328,11 +321,7 @@ def get_purchase(request):
         'billno__labour_making_charge_note',
     )
 
-    tax_details = PurchaseBillDetails.objects.filter(billno_id=purchase_id).values().first()
-
-    if not tax_details:
-        tax_details = {}
-
+    tax_details = PurchaseBillDetails.objects.filter(billno_id=purchase_id).values().first() or {}
     return JsonResponse({'purchase': list(purchase), 'tax_details': tax_details})
 
 
@@ -343,37 +332,28 @@ def update_purchase(request):
     purchase_id = request.POST.get('id')
 
     if not purchase_id:
-        return JsonResponse({'success': False, 'message': 'Purchase ID is required.'}, status=400)
+        return JsonResponse({'success': False, 'message': 'Purchase ID is required.'})
 
-    total_after_discount = request.POST.get('total_after_discount')
     remaining_amount = request.POST.get('remaining_amount')
-    total_discount = request.POST.get('total_discount')
     payment_amount = request.POST.get('payment_amount')
 
     try:
-        purchase_details = PurchaseBillDetails.objects.get(billno=purchase_id)
-        purchase_bill = purchase_details.billno
-
-        if total_after_discount:
-            purchase_details.total_after_discount = Decimal(total_after_discount)
-
-        if total_discount:
-            purchase_details.total_discount = Decimal(total_discount)
-
-        purchase_details.save()
+        purchase_bill = PurchaseBill.objects.get(billno=purchase_id)
 
         if payment_amount:
-            purchase_bill.payment_amount = Decimal(payment_amount)
+            purchase_bill.payment_amount = float(payment_amount)
 
         if remaining_amount:
-            purchase_bill.remaining_amount = Decimal(remaining_amount)
+            purchase_bill.remaining_amount = float(remaining_amount)
 
         purchase_bill.save(update_fields=['payment_amount', 'remaining_amount'])
-
         return JsonResponse({'success': True})
 
-    except PurchaseBillDetails.DoesNotExist:
+    except PurchaseBill.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'Purchase details not found'})
+
+    except Exception as e:
+        return JsonResponse({'status': False, 'message': str(e)})
 
 
 @login_required
@@ -464,32 +444,27 @@ def new_sale(request):
 
     payment_data = {
         'payment_method': request.POST.get('paymentDetails[paymentMethod]'),
-        'payment_amount': Decimal(payment_amount_raw) if payment_amount_raw else Decimal('0.00')
+        'payment_amount': float(payment_amount_raw) if payment_amount_raw else 0
     }
 
     discount_data = {
         'discount_type': request.POST.get('discountDetails[discountType]'),
-        'discount_value': Decimal(discount_value_raw) if discount_value_raw else Decimal('0.00'),
+        'discount_value': float(discount_value_raw) if discount_value_raw else 0,
         'discount_note': request.POST.get('discountDetails[discountNote]')
     }
 
     charges_data = {
         'labour_making_charge_type': request.POST.get('chargeDetails[labourMakingChargeType]'),
-        'labour_making_charge_value': Decimal(labour_making_charge__value_raw) if labour_making_charge__value_raw else Decimal('0.00'),
+        'labour_making_charge_value': float(labour_making_charge__value_raw) if labour_making_charge__value_raw else 0,
         'labour_making_charge_note': request.POST.get('chargeDetails[labourMakingChargeNote]')
     }
 
     tax_data = {
-        'gst': Decimal(gst_raw) if gst_raw else Decimal('0.00'),
+        'gst': float(gst_raw) if gst_raw else 0,
     }
 
-    other_data = {}
-
-    sale_time_raw = request.POST.get('time')
-    sale_time = datetime.strptime(sale_time_raw, "%Y-%m-%d").date() if sale_time_raw else None
-
-    if sale_time:
-        other_data['time'] = sale_time
+    sale_time = request.POST.get('time')
+    other_data = {'time': sale_time} if sale_time else {}
 
     products_data = []
 
@@ -510,7 +485,10 @@ def new_sale(request):
         try:
             customer = None
 
-            if customer_data['name']:
+            if customer_data['phone']:
+                customer = Customer.objects.filter(phone=customer_data['phone']).first()
+
+            elif customer_data['name']:
                 customer = Customer.objects.annotate(
                     trimmed_name=Trim('name')
                 ).filter(trimmed_name__iexact=customer_data['name'].strip()).first()
@@ -608,11 +586,7 @@ def get_sale(request):
         'billno__labour_making_charge_note',
     )
 
-    tax_details = SaleBillDetails.objects.filter(billno_id=sale_id).values().first()
-
-    if not tax_details:
-        tax_details = {}
-
+    tax_details = SaleBillDetails.objects.filter(billno_id=sale_id).values().first() or {}
     return JsonResponse({'sale': list(sale), 'tax_details': tax_details})
 
 
@@ -623,37 +597,28 @@ def update_sale(request):
     sale_id = request.POST.get('id')
 
     if not sale_id:
-        return JsonResponse({'success': False, 'message': 'Sale ID is required.'}, status=400)
+        return JsonResponse({'success': False, 'message': 'Sale ID is required.'})
 
-    total_after_discount = request.POST.get('total_after_discount')
     remaining_amount = request.POST.get('remaining_amount')
-    total_discount = request.POST.get('total_discount')
     payment_amount = request.POST.get('payment_amount')
 
     try:
-        sale_details = SaleBillDetails.objects.get(billno=sale_id)
-        sale_bill = sale_details.billno
-
-        if total_after_discount:
-            sale_details.total_after_discount = Decimal(total_after_discount)
-
-        if total_discount:
-            sale_details.total_discount = Decimal(total_discount)
-
-        sale_details.save()
+        sale_bill = SaleBill.objects.get(billno=sale_id)
 
         if payment_amount:
-            sale_bill.payment_amount = Decimal(payment_amount)
+            sale_bill.payment_amount = float(payment_amount)
 
         if remaining_amount:
-            sale_bill.remaining_amount = Decimal(remaining_amount)
+            sale_bill.remaining_amount = float(remaining_amount)
 
         sale_bill.save(update_fields=['payment_amount', 'remaining_amount'])
-
         return JsonResponse({'success': True})
 
-    except SaleBillDetails.DoesNotExist:
+    except SaleBill.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'Sale details not found'})
+
+    except Exception as e:
+        return JsonResponse({'status': False, 'message': str(e)})
 
 
 @login_required
@@ -741,10 +706,10 @@ def customers(request):
 @require_POST
 def new_customer(request):
 
-    data = request.POST.dict()
-
     try:
+        data = request.POST.dict()
         parsed_data = parse_fields_from_request(data, Customer)
+
         Customer.objects.create(**parsed_data)
 
     except Exception as e:

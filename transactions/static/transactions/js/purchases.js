@@ -579,8 +579,6 @@ $(document).ready(function() {
         var csrftoken = getCookie('csrftoken');
         var purchaseID = $('#view-purchase-bill-id').val();
 
-        var total_discount = $('#total-discount-view').val();
-        var total_after_discount = $('#grand-total-view').val();
         var payment_amount = $('#paid-amount-view').val();
         var remaining_amount = $('#remaining-amount-view').val();
 
@@ -592,8 +590,6 @@ $(document).ready(function() {
             },
             data: {
                 'id': purchaseID,
-                'total_discount': total_discount,
-                'total_after_discount': total_after_discount,
                 'payment_amount': payment_amount,
                 'remaining_amount': remaining_amount,
             },

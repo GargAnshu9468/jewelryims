@@ -117,6 +117,7 @@ $(document).ready(function() {
             giraveeInfo.add_amount = $('#edit-giravee-add-amount').val();
             giraveeInfo.add_note = $('#edit-giravee-add-note').val();
             giraveeInfo.start_date = $('#edit-giravee-start-date').val();
+            giraveeInfo.deposit_date = $('#edit-giravee-deposit-date').val();
         } else if (activeModal === 'popup-delete') {
             giraveeInfo.id = $('#delete-giravee-id').val();
         }

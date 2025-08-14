@@ -37,7 +37,7 @@ class Giravee(models.Model):
         total_interest = Decimal('0.00')
 
         for txn in transactions:
-            days = (txn.date - current).days
+            days = max((txn.date - current).days, 0)
             time_in_years = Decimal(days) / Decimal('365.25')
 
             compound_factor = (Decimal('1') + rate) ** time_in_years
@@ -48,7 +48,7 @@ class Giravee(models.Model):
 
             current = txn.date
 
-        days = (end - current).days
+        days = max((end - current).days, 0)
         time_in_years = Decimal(days) / Decimal('365.25')
         compound_factor = (Decimal('1') + rate) ** time_in_years
 
@@ -71,7 +71,7 @@ class Giravee(models.Model):
         total_interest = Decimal('0.00')
 
         for txn in transactions:
-            days = (txn.date - current).days
+            days = max((txn.date - current).days, 0)
             time_in_years = Decimal(days) / Decimal('365.25')
 
             compound_factor = (Decimal('1') + rate) ** time_in_years
@@ -90,7 +90,7 @@ class Giravee(models.Model):
             current = txn.date
 
         today = timezone.now().date()
-        days = (today - current).days
+        days = max((today - current).days, 0)
         time_in_years = Decimal(days) / Decimal('365.25')
 
         compound_factor = (Decimal('1') + rate) ** time_in_years

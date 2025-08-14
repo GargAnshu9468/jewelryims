@@ -7,7 +7,6 @@ from .models import Giravee, GiraveeTransaction
 from .utils import parse_fields_from_request
 from django.http import JsonResponse
 from django.shortcuts import render
-from decimal import Decimal
 
 
 @login_required
@@ -99,10 +98,10 @@ def edit_giravee(request):
         return JsonResponse({'status': 'error', 'message': 'Giravee ID is required.'}, status=400)
 
     try:
-        giravee = Giravee.objects.get(id=giravee_id)
-
         data = request.POST.dict()
         parsed_data = parse_fields_from_request(data, Giravee)
+
+        giravee = Giravee.objects.get(id=giravee_id)
 
         for key, value in parsed_data.items():
             if key != 'id':
@@ -110,22 +109,22 @@ def edit_giravee(request):
 
         giravee.save()
 
-        add_amount = data.get('add_amount')
+        add_amount = float(data.get('add_amount', 0))
+        deposit_date = data.get('deposit_date')
         note = data.get('add_note', '')
 
-        if add_amount:
-            try:
-                amount = Decimal(add_amount)
+        if add_amount and add_amount > 0:
 
-                if amount > 0:
-                    GiraveeTransaction.objects.create(
-                        giravee=giravee,
-                        amount=amount,
-                        note=note
-                    )
+            txn_attrs = {
+                'giravee': giravee,
+                'amount': add_amount,
+                'note': note
+            }
 
-            except Exception as e:
-                return JsonResponse({'status': 'error', 'message': f'Invalid amount: {str(e)}'}, status=400)
+            if deposit_date:
+                txn_attrs['date'] = deposit_date
+
+            GiraveeTransaction.objects.create(**txn_attrs)
 
         return JsonResponse({'status': 'success', 'message': 'Giravee updated successfully.'})
 
