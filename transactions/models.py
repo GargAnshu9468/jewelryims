@@ -34,8 +34,8 @@ class PurchaseBill(models.Model):
         blank=True,
         null=True
     )
-    payment_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    remaining_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    payment_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    remaining_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     discount_type = models.CharField(
         max_length=10,
         choices=DiscountChoices.choices(),
@@ -43,7 +43,7 @@ class PurchaseBill(models.Model):
         blank=True,
         null=True
     )
-    discount_value = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    discount_value = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     discount_note = models.TextField(blank=True, null=True)
     labour_making_charge_note = models.TextField(blank=True, null=True)
     labour_making_charge_type = models.CharField(
@@ -54,7 +54,7 @@ class PurchaseBill(models.Model):
         null=True
     )
     labour_making_charge_value = models.DecimalField(
-        max_digits=10,
+        max_digits=12,
         decimal_places=2,
         blank=True,
         null=True
@@ -97,9 +97,9 @@ class PurchaseItem(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name="purchaseitem")
     stock_note = models.TextField(blank=True, null=True)
     quantity = models.IntegerField(default=1)
-    weight = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    perprice = models.IntegerField(default=1)
-    totalprice = models.IntegerField(default=1)
+    weight = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    perprice = models.DecimalField(max_digits=12, decimal_places=2)
+    totalprice = models.DecimalField(max_digits=12, decimal_places=2)
     date = models.DateField(default=date.today)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -203,8 +203,8 @@ class SaleBill(models.Model):
         blank=True,
         null=True
     )
-    payment_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    remaining_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    payment_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    remaining_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     discount_type = models.CharField(
         max_length=10,
         choices=DiscountChoices.choices(),
@@ -212,7 +212,7 @@ class SaleBill(models.Model):
         blank=True,
         null=True
     )
-    discount_value = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    discount_value = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     discount_note = models.TextField(blank=True, null=True)
     labour_making_charge_note = models.TextField(blank=True, null=True)
     labour_making_charge_type = models.CharField(
@@ -223,7 +223,7 @@ class SaleBill(models.Model):
         null=True
     )
     labour_making_charge_value = models.DecimalField(
-        max_digits=10,
+        max_digits=12,
         decimal_places=2,
         blank=True,
         null=True
@@ -266,9 +266,9 @@ class SaleItem(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name="saleitem")
     stock_note = models.TextField(blank=True, null=True)
     quantity = models.IntegerField(default=1)
-    weight = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    perprice = models.IntegerField(default=1)
-    totalprice = models.IntegerField(default=1)
+    weight = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    perprice = models.DecimalField(max_digits=12, decimal_places=2)
+    totalprice = models.DecimalField(max_digits=12, decimal_places=2)
     date = models.DateField(default=date.today)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
