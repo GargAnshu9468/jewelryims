@@ -595,38 +595,92 @@ $(document).ready(function() {
         event.preventDefault();
 
         var csrftoken = getCookie('csrftoken');
+
         var searchText = $('#searchInput').val().trim();
+        var startDate = $('#searchStartDate').val();
+        var endDate = $('#searchEndDate').val();
 
-        if (searchText) {
-
-            $.ajax({
-                url: '/transactions/search-sale/',
-                type: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken
-                },
-                data: {
-                    'search_text': searchText
-                },
-                success: function(response) {
-
-                    if (response.sales.trim() === '') {
-                        swal("No Content", "No content found", "info");
-                    } else {
-                        $('tbody').html(response.sales);
-                        $('#pagination-main').hide();
-                        $('#pagination-search').show();
-                    }
-
-                },
-                error: function(xhr, status, error) {
-                    swal("Error", "Error searching sale: " + error, "error");
-                }
-            });
-
-        } else {
-            swal("Error", "Please enter a search term", "error");
+        if (!searchText && !startDate && !endDate) {
+            swal("Error", "Please enter a search term or date range", "error");
+            return;
         }
+
+        if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+            var temp = startDate;
+            startDate = endDate;
+            endDate = temp;
+        }
+
+        $.ajax({
+            url: '/transactions/search-sale/',
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            data: {
+                'search_text': searchText,
+                'start_date': startDate,
+                'end_date': endDate
+            },
+            success: function(response) {
+
+                if (response.sales.trim() === '') {
+                    swal("No Content", "No content found", "info");
+                } else {
+                    $('tbody').html(response.sales);
+                    $('#pagination-main').hide();
+                    $('#pagination-search').show();
+                }
+
+            },
+            error: function(xhr, status, error) {
+                swal("Error", "Error searching sale: " + error, "error");
+            }
+        });
+    });
+
+    // Event handler to delete search results
+
+    $('#deleteButton').click(function(event) {
+        event.preventDefault();
+
+        var csrftoken = getCookie('csrftoken');
+
+        var searchText = $('#searchInput').val().trim();
+        var startDate = $('#searchStartDate').val();
+        var endDate = $('#searchEndDate').val();
+
+        if (!searchText && !startDate && !endDate) {
+            swal("Error", "Please enter a search term or date range", "error");
+            return;
+        }
+
+        if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+            var temp = startDate;
+            startDate = endDate;
+            endDate = temp;
+        }
+
+        $.ajax({
+            url: '/transactions/delete-sale/',
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            data: {
+                'search_text': searchText,
+                'start_date': startDate,
+                'end_date': endDate
+            },
+            success: function(response) {
+                swal("Success", "Sale bills deleted successfully", "success").then((value) => {
+                    location.reload();
+                });
+            },
+            error: function(xhr, status, error) {
+                swal("Error", "Error deleting sale bills: " + error, "error");
+            }
+        });
     });
 
     // Event handler for customer details popup

@@ -355,7 +355,51 @@ $(document).ready(function() {
 
             },
             error: function(xhr, status, error) {
-                swal("Error", "Error searching giravee: " + error, "error");
+                swal("Error", "Error searching giravees: " + error, "error");
+            }
+        });
+    });
+
+    // Event handler to delete search results
+
+    $('#deleteButton').click(function(event) {
+        event.preventDefault();
+
+        var csrftoken = getCookie('csrftoken');
+
+        var searchText = $('#searchInput').val().trim();
+        var startDate = $('#searchStartDate').val();
+        var endDate = $('#searchEndDate').val();
+
+        if (!searchText && !startDate && !endDate) {
+            swal("Error", "Please enter a search term or date range", "error");
+            return;
+        }
+
+        if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+            var temp = startDate;
+            startDate = endDate;
+            endDate = temp;
+        }
+
+        $.ajax({
+            url: '/giravee/delete-giravee/',
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            data: {
+                'search_text': searchText,
+                'start_date': startDate,
+                'end_date': endDate
+            },
+            success: function(response) {
+                swal("Success", "Giravees deleted successfully", "success").then((value) => {
+                    location.reload();
+                });
+            },
+            error: function(xhr, status, error) {
+                swal("Error", "Error deleting giravees: " + error, "error");
             }
         });
     });
