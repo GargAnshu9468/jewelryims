@@ -32,6 +32,9 @@ REM Make & run migrations silently
 python manage.py makemigrations >nul 2>&1
 python manage.py migrate >nul 2>&1
 
+REM Create superuser if not already
+python manage.py initadmin
+
 REM Start server in a new window
 start "" python manage.py runserver 127.0.0.1:8000
 
