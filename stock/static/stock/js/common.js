@@ -42,6 +42,18 @@ function formatDate(dateString) {
     return months[monthIndex] + ' ' + day + ', ' + year;
 }
 
+// Convert to integer paise
+
+function toPaise(val) {
+    return Math.round((parseFloat(val) || 0) * 100);
+}
+
+// Convert paise to rupee string with 2 decimals
+
+function fromPaise(paise) {
+    return (paise / 100).toFixed(2);
+}
+
 // Event handler for the close button in all popups
 
 $(document).on('click', '.close', function(event) {

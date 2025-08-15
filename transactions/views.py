@@ -7,7 +7,9 @@ from giravee.utils import parse_fields_from_request
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.db import transaction
+from django.db.models import Sum
 from giravee.utils import Trim
+from decimal import Decimal
 
 
 @login_required
@@ -152,7 +154,7 @@ def search_supplier(request):
 @login_required
 def purchases(request):
 
-    purchases_list = PurchaseItem.objects.filter().order_by('-date')
+    purchases_list = PurchaseItem.objects.filter().order_by('-id')
 
     paginator = Paginator(list(purchases_list), 6)
     page_number = request.GET.get('page')
@@ -322,7 +324,20 @@ def get_purchase(request):
     )
 
     tax_details = PurchaseBillDetails.objects.filter(billno_id=purchase_id).values().first() or {}
-    return JsonResponse({'purchase': list(purchase), 'tax_details': tax_details})
+    bill = PurchaseBill.objects.select_related('supplier').get(pk=purchase_id)
+
+    previous_balance = (
+        PurchaseBill.objects
+        .filter(supplier=bill.supplier, billno__lt=bill.billno)
+        .aggregate(total=Sum('remaining_amount'))
+        .get('total') or Decimal('0.00')
+    )
+
+    return JsonResponse({
+        'purchase': list(purchase),
+        'tax_details': tax_details,
+        'previous_balance': str(previous_balance)
+    })
 
 
 @login_required
@@ -396,7 +411,7 @@ def search_purchase(request):
 @login_required
 def sales(request):
 
-    sales_list = SaleItem.objects.filter().order_by('-date')
+    sales_list = SaleItem.objects.filter().order_by('-id')
 
     paginator = Paginator(list(sales_list), 6)
     page_number = request.GET.get('page')
@@ -587,7 +602,20 @@ def get_sale(request):
     )
 
     tax_details = SaleBillDetails.objects.filter(billno_id=sale_id).values().first() or {}
-    return JsonResponse({'sale': list(sale), 'tax_details': tax_details})
+    bill = SaleBill.objects.select_related('customer').get(pk=sale_id)
+
+    previous_balance = (
+        SaleBill.objects
+        .filter(customer=bill.customer, billno__lt=bill.billno)
+        .aggregate(total=Sum('remaining_amount'))
+        .get('total') or Decimal('0.00')
+    )
+
+    return JsonResponse({
+        'sale': list(sale),
+        'tax_details': tax_details,
+        'previous_balance': str(previous_balance)
+    })
 
 
 @login_required
@@ -633,18 +661,18 @@ def delete_sale(request):
     try:
         sale = SaleBill.objects.get(pk=sale_id)
 
-        with transaction.atomic():
-            sale_items = SaleItem.objects.filter(billno=sale)
+        # with transaction.atomic():
+        #     sale_items = SaleItem.objects.filter(billno=sale)
 
-            for item in sale_items:
-                stock = item.stock
+        #     for item in sale_items:
+        #         stock = item.stock
 
-                stock.quantity += item.quantity
-                stock.weight += item.weight or 0
+        #         stock.quantity += item.quantity
+        #         stock.weight += item.weight or 0
 
-                stock.save()
+        #         stock.save()
 
-            sale.delete()
+        sale.delete()
 
         return JsonResponse({'status': 'success', 'message': 'Sale deleted successfully'})
 
@@ -713,6 +741,7 @@ def new_customer(request):
         Customer.objects.create(**parsed_data)
 
     except Exception as e:
+        print(str(e))
         return JsonResponse({'status': 'error', 'message': f'Error adding customer: {str(e)}'}, status=500)
 
     return JsonResponse({'status': 'success', 'message': 'Customer added successfully'})

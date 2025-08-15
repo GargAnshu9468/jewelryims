@@ -176,7 +176,7 @@ def update_purchase_bill_details(sender, instance, **kwargs):
 
     # Step 7: Update PurchaseBillDetails
     PurchaseBillDetails.objects.filter(pk=instance.pk).update(
-        total=total,
+        total=items_total,
         total_after_discount=total_after_discount,
         total_discount=total_discount,
         gst_amount=gst_amount,
@@ -345,7 +345,7 @@ def update_sale_bill_details(sender, instance, **kwargs):
 
     # Step 6: Update SaleBillDetails
     SaleBillDetails.objects.filter(pk=instance.pk).update(
-        total=total,
+        total=items_total,
         total_after_discount=total_after_discount,
         total_discount=total_discount,
         gst_amount=gst_amount,

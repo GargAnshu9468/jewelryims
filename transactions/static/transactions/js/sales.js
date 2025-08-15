@@ -204,15 +204,15 @@ function updateSaleDetails(saleInfo) {
 
 // Function to update bill status
 
-function updateBillStatus(remaining, total) {
+function updateBillStatus(grandTotal, paid) {
     let status = 'Unpaid';
 
-    if (remaining <= 0) {
-        status = 'Paid';
-    } else if (remaining > 0 && remaining < total) {
+    if (paid <= 0) {
+        status = 'Unpaid';
+    } else if (paid > 0 && paid < grandTotal) {
         status = 'Partially Paid';
     } else {
-        status = 'Unpaid'
+        status = 'Paid'
     }
 
     $('#bill-status-view').text(status);
@@ -389,10 +389,11 @@ $(document).ready(function() {
             success: function (response) {
                 const saleData = response.sale;
                 const taxData = response.tax_details;
+                const previousBalance = parseFloat(response.previous_balance || 0);
 
                 const saleInfo = saleData[0];
 
-                const paymentAmount = parseFloat(saleInfo?.billno__payment_amount || 0);
+                let paymentAmount = parseFloat(saleInfo?.billno__payment_amount || 0);
                 const remainingAmount = parseFloat(saleInfo?.billno__remaining_amount || 0);
                 const paymentMethod = saleInfo?.billno__payment_method || '';
                 const stockNote = saleInfo?.stock_note || '';
@@ -401,7 +402,10 @@ $(document).ready(function() {
                 const totalAfterDiscount = parseFloat(taxData?.total_after_discount || 0);
                 const total = parseFloat(taxData?.total || 0);
                 const total_labour_making_charge = parseFloat(taxData?.total_labour_making_charge || 0);
-                const total_weight = parseFloat(taxData?.total_weight || 0);
+                const totalWeight = parseFloat(taxData?.total_weight || 0);
+                let totalBalance = total + previousBalance;
+                let grandTotalBalance = (totalBalance + total_labour_making_charge) - totalDiscount;
+                let remainingBalance = grandTotalBalance - paymentAmount;
 
                 $('#invoice-no').text('INVOICE NO: ' + saleInfo.billno__billno);
                 $('#bill-date').text('DATE: ' + formatDate(saleInfo.billno__time));
@@ -426,36 +430,23 @@ $(document).ready(function() {
 
                 $('#gst-input').val(gst_amount.toFixed(2));
                 $('#view-labour-making-charges').val(total_labour_making_charge.toFixed(2));
-                $('#total-price-view').val(total.toFixed(2));
+                $('#total-price-view').val(totalBalance.toFixed(2));
                 $('#total-discount-view').val(totalDiscount.toFixed(2));
-                $('#grand-total-view').val(totalAfterDiscount.toFixed(2));
+                $('#grand-total-view').val(grandTotalBalance.toFixed(2));
                 $('#paid-amount-view').val(paymentAmount.toFixed(2));
-                $('#remaining-amount-view').val(remainingAmount.toFixed(2));
+                $('#previous-balance-view').val(previousBalance.toFixed(2));
+                $('#remaining-amount-view').val(remainingBalance.toFixed(2));
 
-                updateBillStatus(remainingAmount, totalAfterDiscount);
-
-                $('#total-discount-view').off('input').on('input', function () {
-                    const discount = parseFloat($(this).val()) || 0;
-                    const totalPrice = parseFloat($('#total-price-view').val()) || 0;
-                    const paid = parseFloat($('#paid-amount-view').val()) || 0;
-
-                    const newGrandTotal = totalPrice - discount;
-                    const newRemaining = newGrandTotal - paid;
-
-                    $('#grand-total-view').val(newGrandTotal.toFixed(2));
-                    $('#remaining-amount-view').val(newRemaining.toFixed(2));
-
-                    updateBillStatus(newRemaining, newGrandTotal);
-                });
+                updateBillStatus(grandTotalBalance, paymentAmount);
 
                 $('#paid-amount-view').off('input').on('input', function () {
-                    const paid = parseFloat($(this).val()) || 0;
+                    paymentAmount = parseFloat($(this).val()) || 0;
+
                     const grandTotal = parseFloat($('#grand-total-view').val()) || 0;
+                    const remainingBalance = grandTotal - paymentAmount;
 
-                    const newRemaining = grandTotal - paid;
-                    $('#remaining-amount-view').val(newRemaining.toFixed(2));
-
-                    updateBillStatus(newRemaining, grandTotal);
+                    $('#remaining-amount-view').val(remainingBalance.toFixed(2));
+                    updateBillStatus(grandTotal, paymentAmount);
                 });
 
                 showModal('popup-view');

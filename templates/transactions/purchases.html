@@ -416,22 +416,18 @@
 
                                 <div style="display: flex; flex-direction: column;">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <label for="gst-input">GST @ 3%:</label>
-                                        <input type="number" id="gst-input" readonly>
+                                        <label for="previous-balance-view">Last Balance (Rs.):</label>
+                                        <input type="number" id="previous-balance-view" readonly>
                                     </div>
 
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <label for="view-labour-making-charges">Labour charges:</label>
-                                        <input type="number" id="view-labour-making-charges" readonly>
-                                    </div>
-                                </div>
-
-                                <hr style="border: 1px solid #000; margin: 10px 0;">
-
-                                <div style="display: flex; flex-direction: column;">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
                                         <label for="total-price-view">Total (Rs.):</label>
                                         <input type="number" id="total-price-view" readonly>
+                                    </div>
+
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <label for="view-labour-making-charges">Labour:</label>
+                                        <input type="number" id="view-labour-making-charges" readonly>
                                     </div>
 
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -439,14 +435,19 @@
                                         <input type="number" id="total-discount-view" readonly>
                                     </div>
 
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <label for="grand-total-view">Grand Total (Rs.):</label>
-                                        <input type="number" id="grand-total-view" readonly>
-                                    </div>
+                                    <!-- <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <label for="gst-input">GST:</label>
+                                        <input type="number" id="gst-input" readonly>
+                                    </div> -->
 
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
                                         <label for="paid-amount-view">Paid (Rs.):</label>
                                         <input type="number" id="paid-amount-view">
+                                    </div>
+
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <label for="grand-total-view">Grand Total (Rs.):</label>
+                                        <input type="number" id="grand-total-view" readonly>
                                     </div>
 
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -463,7 +464,7 @@
                                 </div>
 
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <label for="bill-status-view">Bill status:</label>
+                                    <label for="bill-status-view">Payment status:</label>
                                     <h6 id="bill-status-view"></h6>
                                 </div>
                             </div>
