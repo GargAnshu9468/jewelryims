@@ -37,7 +37,7 @@ class Giravee(models.Model):
         full_months = rd.years * 12 + rd.months
 
         # Partial month days
-        partial_days = rd.days
+        partial_days = (end - (start + relativedelta(months=full_months))).days
         days_in_partial_month = (start + relativedelta(months=full_months+1) - (start + relativedelta(months=full_months))).days
 
         total_interest = Decimal('0.00')
