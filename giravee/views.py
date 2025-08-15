@@ -15,7 +15,7 @@ from datetime import date
 @login_required
 def giravee(request):
 
-    giravee_list = Giravee.objects.filter().order_by('-id')
+    giravee_list = Giravee.objects.filter(is_cleared=False).order_by('-id')
 
     paginator = Paginator(list(giravee_list), 6)
     page_number = request.GET.get('page')
