@@ -32,33 +32,32 @@ class Giravee(models.Model):
         start = self.start_date
         end = end_date or timezone.now().date()
 
+        # Full months
+        rd = relativedelta(end, start)
+        full_months = rd.years * 12 + rd.months
+
+        # Partial month days
+        partial_days = rd.days
+        days_in_partial_month = (start + relativedelta(months=full_months+1) - (start + relativedelta(months=full_months))).days
+
         total_interest = Decimal('0.00')
         yearly_interest_accum = Decimal('0.00')
 
-        # transactions = list(self.transactions.order_by('date'))
-
-        months_count = 0
-        current = start
-
-        while current < end:
-            month_end = current + relativedelta(months=1)
+        # Interest for full months
+        for _ in range(full_months):
             interest = (principal * monthly_rate).quantize(Decimal('0.01'))
 
-            months_count += 1
             total_interest += interest
             yearly_interest_accum += interest
 
-            if months_count == 12:
-                months_count = 0
+            if yearly_interest_accum and (_ + 1) % 12 == 0:
                 principal += yearly_interest_accum
                 yearly_interest_accum = Decimal('0.00')
 
-            # period_txns = [t for t in transactions if current <= t.date < month_end]
-
-            # for txn in period_txns:
-            #     principal = max(principal - txn.amount, Decimal('0'))
-
-            current = month_end
+        # Interest for partial month (pro-rated)
+        if partial_days > 0:
+            partial_interest = (principal * monthly_rate * Decimal(partial_days) / Decimal(days_in_partial_month)).quantize(Decimal('0.01'))
+            total_interest += partial_interest
 
         return total_interest
 
