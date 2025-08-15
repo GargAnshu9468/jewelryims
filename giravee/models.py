@@ -1,5 +1,7 @@
+from dateutil.relativedelta import relativedelta
 from stock.constants import LockerNumberChoices
 from django.utils import timezone
+from calendar import monthrange
 from django.db import models
 from decimal import Decimal
 from datetime import date
@@ -24,9 +26,58 @@ class Giravee(models.Model):
     def total_paid_amount(self):
         return sum(txn.amount for txn in self.transactions.all())
 
+    def _month_interest(self, principal, monthly_rate, days_fraction=1):
+        """Calculate interest for a month or fraction of month."""
+        return (principal * monthly_rate * Decimal(str(days_fraction))).quantize(Decimal('0.01'))
+
     def calculate_interest(self, end_date=None):
         principal = Decimal(str(self.amount))
+
         rate = Decimal(str(self.interest_rate)) / Decimal('100')
+        monthly_rate = rate / Decimal('12')
+
+        start = self.start_date
+        end = end_date or timezone.now().date()
+
+        transactions = list(self.transactions.order_by('date'))
+        current = start
+
+        total_interest = Decimal('0.00')
+
+        while current < end:
+            month_days = monthrange(current.year, current.month)[1]
+            month_end = current.replace(day=month_days)
+
+            if end <= month_end:
+                days_fraction = Decimal((end - current).days) / Decimal(month_days)
+
+            else:
+                days_fraction = Decimal((month_end - current).days + 1) / Decimal(month_days)
+
+            interest = self._month_interest(principal, monthly_rate, days_fraction)
+            total_interest += interest
+            principal += interest
+
+            period_end = min(month_end + relativedelta(days=1), end)
+            period_txns = [t for t in transactions if current <= t.date < period_end]
+
+            for txn in period_txns:
+                principal = max(principal - txn.amount, Decimal('0'))
+
+            current = period_end
+
+        return total_interest
+
+    def total_due(self):
+        return Decimal(str(self.amount)) + self.calculate_interest() - self.total_paid_amount()
+
+    def interest_history(self, end_date=None):
+        principal = Decimal(str(self.amount))
+
+        rate = Decimal(str(self.interest_rate)) / Decimal('100')
+        monthly_rate = rate / Decimal('12')
+
+        history = []
 
         start = self.start_date
         end = end_date or timezone.now().date()
@@ -36,74 +87,38 @@ class Giravee(models.Model):
 
         total_interest = Decimal('0.00')
 
-        for txn in transactions:
-            days = max((txn.date - current).days, 0)
-            time_in_years = Decimal(days) / Decimal('365.25')
+        while current < end:
+            month_days = monthrange(current.year, current.month)[1]
+            month_end = current.replace(day=month_days)
 
-            compound_factor = (Decimal('1') + rate) ** time_in_years
-            interest = (principal * (compound_factor - Decimal('1'))).quantize(Decimal('0.01'))
+            if end <= month_end:
+                days_fraction = Decimal((end - current).days) / Decimal(month_days)
 
+            else:
+                days_fraction = Decimal((month_end - current).days + 1) / Decimal(month_days)
+
+            interest = self._month_interest(principal, monthly_rate, days_fraction)
             total_interest += interest
-            principal = max(principal - txn.amount, Decimal('0'))
+            principal += interest
 
-            current = txn.date
+            period_end = min(month_end + relativedelta(days=1), end)
+            period_txns = [t for t in transactions if current <= t.date < period_end]
 
-        days = max((end - current).days, 0)
-        time_in_years = Decimal(days) / Decimal('365.25')
-        compound_factor = (Decimal('1') + rate) ** time_in_years
+            total_paid_this_period = Decimal('0.00')
 
-        interest = (principal * (compound_factor - Decimal('1'))).quantize(Decimal('0.01'))
-        total_interest += interest
-
-        return total_interest
-
-    def total_due(self):
-        return Decimal(str(self.amount)) + self.calculate_interest() - self.total_paid_amount()
-
-    def interest_history(self):
-        principal = Decimal(str(self.amount))
-        rate = Decimal(str(self.interest_rate)) / Decimal('100')
-
-        history = []
-        transactions = self.transactions.order_by('date')
-
-        current = self.start_date
-        total_interest = Decimal('0.00')
-
-        for txn in transactions:
-            days = max((txn.date - current).days, 0)
-            time_in_years = Decimal(days) / Decimal('365.25')
-
-            compound_factor = (Decimal('1') + rate) ** time_in_years
-            interest = (principal * (compound_factor - Decimal('1'))).quantize(Decimal('0.01'))
+            for txn in period_txns:
+                principal = max(principal - txn.amount, Decimal('0'))
+                total_paid_this_period += txn.amount
 
             history.append({
                 'from': current,
-                'to': txn.date,
+                'to': period_end,
                 'interest': interest,
-                'paid': txn.amount,
+                'paid': total_paid_this_period if total_paid_this_period > 0 else None,
+                'remaining_principal': principal
             })
 
-            total_interest += interest
-            principal = max(principal - txn.amount, Decimal('0'))
-
-            current = txn.date
-
-        today = timezone.now().date()
-        days = max((today - current).days, 0)
-        time_in_years = Decimal(days) / Decimal('365.25')
-
-        compound_factor = (Decimal('1') + rate) ** time_in_years
-        interest = (principal * (compound_factor - Decimal('1'))).quantize(Decimal('0.01'))
-
-        history.append({
-            'from': current,
-            'to': today,
-            'interest': interest,
-            'paid': None,
-        })
-
-        total_interest += interest
+            current = period_end
 
         return {
             'history': history,
@@ -111,7 +126,6 @@ class Giravee(models.Model):
         }
 
     def save(self, *args, **kwargs):
-        is_new = self.pk is None
         super().save(*args, **kwargs)
 
         interest = self.calculate_interest()
