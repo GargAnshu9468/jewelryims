@@ -1,7 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from stock.constants import LockerNumberChoices
 from django.utils import timezone
-from calendar import monthrange
 from django.db import models
 from decimal import Decimal
 from datetime import date
@@ -26,104 +25,42 @@ class Giravee(models.Model):
     def total_paid_amount(self):
         return sum(txn.amount for txn in self.transactions.all())
 
-    def _month_interest(self, principal, monthly_rate, days_fraction=1):
-        """Calculate interest for a month or fraction of month."""
-        return (principal * monthly_rate * Decimal(str(days_fraction))).quantize(Decimal('0.01'))
-
     def calculate_interest(self, end_date=None):
         principal = Decimal(str(self.amount))
-
-        rate = Decimal(str(self.interest_rate)) / Decimal('100')
-        monthly_rate = rate / Decimal('12')
+        monthly_rate = Decimal(str(self.interest_rate)) / Decimal('100')
 
         start = self.start_date
         end = end_date or timezone.now().date()
 
-        transactions = list(self.transactions.order_by('date'))
+        total_interest = Decimal('0.00')
+        yearly_interest_accum = Decimal('0.00')
+
+        # transactions = list(self.transactions.order_by('date'))
+
+        months_count = 0
         current = start
 
-        total_interest = Decimal('0.00')
-
         while current < end:
-            month_days = monthrange(current.year, current.month)[1]
-            month_end = current.replace(day=month_days)
+            month_end = current + relativedelta(months=1)
+            interest = (principal * monthly_rate).quantize(Decimal('0.01'))
 
-            if end <= month_end:
-                days_fraction = Decimal((end - current).days) / Decimal(month_days)
-
-            else:
-                days_fraction = Decimal((month_end - current).days + 1) / Decimal(month_days)
-
-            interest = self._month_interest(principal, monthly_rate, days_fraction)
+            months_count += 1
             total_interest += interest
-            principal += interest
+            yearly_interest_accum += interest
 
-            period_end = min(month_end + relativedelta(days=1), end)
-            period_txns = [t for t in transactions if current <= t.date < period_end]
+            if months_count == 12:
+                months_count = 0
+                principal += yearly_interest_accum
+                yearly_interest_accum = Decimal('0.00')
 
-            for txn in period_txns:
-                principal = max(principal - txn.amount, Decimal('0'))
+            # period_txns = [t for t in transactions if current <= t.date < month_end]
 
-            current = period_end
+            # for txn in period_txns:
+            #     principal = max(principal - txn.amount, Decimal('0'))
+
+            current = month_end
 
         return total_interest
-
-    def total_due(self):
-        return Decimal(str(self.amount)) + self.calculate_interest() - self.total_paid_amount()
-
-    def interest_history(self, end_date=None):
-        principal = Decimal(str(self.amount))
-
-        rate = Decimal(str(self.interest_rate)) / Decimal('100')
-        monthly_rate = rate / Decimal('12')
-
-        history = []
-
-        start = self.start_date
-        end = end_date or timezone.now().date()
-
-        transactions = self.transactions.order_by('date')
-        current = start
-
-        total_interest = Decimal('0.00')
-
-        while current < end:
-            month_days = monthrange(current.year, current.month)[1]
-            month_end = current.replace(day=month_days)
-
-            if end <= month_end:
-                days_fraction = Decimal((end - current).days) / Decimal(month_days)
-
-            else:
-                days_fraction = Decimal((month_end - current).days + 1) / Decimal(month_days)
-
-            interest = self._month_interest(principal, monthly_rate, days_fraction)
-            total_interest += interest
-            principal += interest
-
-            period_end = min(month_end + relativedelta(days=1), end)
-            period_txns = [t for t in transactions if current <= t.date < period_end]
-
-            total_paid_this_period = Decimal('0.00')
-
-            for txn in period_txns:
-                principal = max(principal - txn.amount, Decimal('0'))
-                total_paid_this_period += txn.amount
-
-            history.append({
-                'from': current,
-                'to': period_end,
-                'interest': interest,
-                'paid': total_paid_this_period if total_paid_this_period > 0 else None,
-                'remaining_principal': principal
-            })
-
-            current = period_end
-
-        return {
-            'history': history,
-            'total_interest': total_interest
-        }
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
