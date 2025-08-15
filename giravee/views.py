@@ -15,7 +15,7 @@ from datetime import date
 @login_required
 def giravee(request):
 
-    giravee_list = Giravee.objects.filter().order_by('id')
+    giravee_list = Giravee.objects.filter().order_by('-id')
 
     paginator = Paginator(list(giravee_list), 6)
     page_number = request.GET.get('page')
@@ -61,7 +61,7 @@ def get_giravees(request):
 
     if giravees.exists():
         giravee = giravees.first()
-        transactions = giravee.transactions.order_by('id')
+        transactions = giravee.transactions.order_by('-id')
 
         transactions_data = [{
             'id': txn.id,
@@ -194,7 +194,7 @@ def search_giravee(request):
     elif end_date:
         query &= Q(start_date__lte=end_date)
 
-    giravee_list = Giravee.objects.filter(query).order_by('id')
+    giravee_list = Giravee.objects.filter(query).order_by('-id')
 
     giravees_html = render(
         request,

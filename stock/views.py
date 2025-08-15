@@ -12,7 +12,7 @@ from .models import Stock
 @login_required
 def stock(request):
 
-    stocks_list = Stock.objects.filter().order_by('id')
+    stocks_list = Stock.objects.filter().order_by('-id')
 
     paginator = Paginator(list(stocks_list), 6)
     page_number = request.GET.get('page')
@@ -126,7 +126,7 @@ def search_stock(request):
     if not search_text:
         return JsonResponse({'status': 'error', 'message': 'Search term missing'}, status=400)
 
-    stocks_list = Stock.objects.filter(name__icontains=search_text).order_by('id')
+    stocks_list = Stock.objects.filter(name__icontains=search_text).order_by('-id')
     stocks = render(request, 'stock/stock-search.html', {'stocks': list(stocks_list)}).content.decode('utf-8')
 
     return JsonResponse({'stocks': stocks})
