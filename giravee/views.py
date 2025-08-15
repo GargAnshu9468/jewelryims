@@ -1,18 +1,21 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from stock.constants import LockerNumberChoices, InterestChoices
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.http import require_POST
-from stock.constants import LockerNumberChoices
 from .models import Giravee, GiraveeTransaction
+from django.utils.dateparse import parse_date
 from .utils import parse_fields_from_request
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.db.models import Q
+from datetime import date
 
 
 @login_required
 def giravee(request):
 
-    giravee_list = Giravee.objects.filter().order_by('-start_date')
+    giravee_list = Giravee.objects.filter().order_by('id')
 
     paginator = Paginator(list(giravee_list), 6)
     page_number = request.GET.get('page')
@@ -36,6 +39,7 @@ def giravee(request):
         'pagination': pagination,
         'breadcrumbs': breadcrumbs,
         'locker_choices': LockerNumberChoices.choices(),
+        'interest_choices': InterestChoices.choices(),
     }
 
     return render(request, 'giravee/giravee.html', context)
@@ -57,7 +61,7 @@ def get_giravees(request):
 
     if giravees.exists():
         giravee = giravees.first()
-        transactions = giravee.transactions.order_by('-date')
+        transactions = giravee.transactions.order_by('id')
 
         transactions_data = [{
             'id': txn.id,
@@ -162,13 +166,41 @@ def delete_giravee(request):
 @require_POST
 def search_giravee(request):
 
-    search_text = request.POST.get('search_text', '')
+    search_text = request.POST.get('search_text', '').strip()
+    start_date_str = request.POST.get('start_date', '').strip()
+    end_date_str = request.POST.get('end_date', '').strip()
 
-    if not search_text:
-        return JsonResponse({'status': 'error', 'message': 'Search term missing'}, status=400)
+    # Parse dates safely
 
-    giravee_list = Giravee.objects.filter(name__icontains=search_text).order_by('-start_date')
-    giravees_html = render(request, 'giravee/giravee-search.html', {'giravees': giravee_list}).content.decode('utf-8')
+    start_date = parse_date(start_date_str) if start_date_str else None
+    end_date = parse_date(end_date_str) if end_date_str else None
+
+    # Swap if end_date is earlier than start_date
+
+    if start_date and end_date and end_date < start_date:
+        start_date, end_date = end_date, start_date
+
+    query = Q()
+
+    if search_text:
+        query &= Q(name__icontains=search_text)
+
+    if start_date and end_date:
+        query &= Q(start_date__range=(start_date, end_date))
+
+    elif start_date:
+        query &= Q(start_date__gte=start_date)
+
+    elif end_date:
+        query &= Q(start_date__lte=end_date)
+
+    giravee_list = Giravee.objects.filter(query).order_by('id')
+
+    giravees_html = render(
+        request,
+        'giravee/giravee-search.html',
+        {'giravees': giravee_list}
+    ).content.decode('utf-8')
 
     return JsonResponse({'giravees': giravees_html})
 

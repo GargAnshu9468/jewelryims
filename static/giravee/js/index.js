@@ -60,6 +60,7 @@ function handleGiraveesData(response) {
     $('#edit-giravee-due-amount-without-interest').val(giravees[0].due_amount_without_interest);
     $('#edit-giravee-locker-number').val(giravees[0].locker_number);
     $('#edit-giravee-start-date').val(giravees[0].start_date);
+    $('#edit-giravee-interest-type').val(giravees[0].interest_type);
 
     var tbody = $('#transaction-history-body');
     tbody.empty();
@@ -106,6 +107,7 @@ $(document).ready(function() {
             giraveeInfo.interest_rate = $('#add-giravee-interest-rate').val();
             giraveeInfo.locker_number = $('#add-giravee-locker-number').val();
             giraveeInfo.start_date = $('#add-giravee-start-date').val();
+            giraveeInfo.interest_type = $('#add-giravee-interest-type').val();
         } else if (activeModal === 'popup-edit') {
             giraveeInfo.id = $('#edit-giravee-id').val();
             giraveeInfo.name = $('#edit-giravee-name').val();
@@ -118,6 +120,7 @@ $(document).ready(function() {
             giraveeInfo.add_note = $('#edit-giravee-add-note').val();
             giraveeInfo.start_date = $('#edit-giravee-start-date').val();
             giraveeInfo.deposit_date = $('#edit-giravee-deposit-date').val();
+            giraveeInfo.interest_type = $('#edit-giravee-interest-type').val();
         } else if (activeModal === 'popup-delete') {
             giraveeInfo.id = $('#delete-giravee-id').val();
         }
@@ -313,39 +316,48 @@ $(document).ready(function() {
         event.preventDefault();
 
         var csrftoken = getCookie('csrftoken');
+
         var searchText = $('#searchInput').val().trim();
+        var startDate = $('#searchStartDate').val();
+        var endDate = $('#searchEndDate').val();
 
-        if (searchText) {
-
-            $.ajax({
-                url: '/giravee/search-giravee/',
-                type: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken
-                },
-                data: {
-                    'search_text': searchText
-                },
-                success: function(response) {
-
-                    if (response.giravees.trim() === '') {
-                        swal("No Content", "No content found", "info");
-                    } else {
-                        $('tbody').html(response.giravees);
-                        $('#pagination-main').hide();
-                        $('#pagination-search').show();
-                    }
-
-                },
-                error: function(xhr, status, error) {
-                    swal("Error", "Error searching giravee: " + error, "error");
-                }
-            });
-
-        } else {
-            swal("Error", "Please enter a search term", "error");
+        if (!searchText && !startDate && !endDate) {
+            swal("Error", "Please enter a search term or date range", "error");
+            return;
         }
 
+        if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+            var temp = startDate;
+            startDate = endDate;
+            endDate = temp;
+        }
+
+        $.ajax({
+            url: '/giravee/search-giravee/',
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            data: {
+                'search_text': searchText,
+                'start_date': startDate,
+                'end_date': endDate
+            },
+            success: function(response) {
+
+                if (response.giravees.trim() === '') {
+                    swal("No Content", "No content found", "info");
+                } else {
+                    $('tbody').html(response.giravees);
+                    $('#pagination-main').hide();
+                    $('#pagination-search').show();
+                }
+
+            },
+            error: function(xhr, status, error) {
+                swal("Error", "Error searching giravee: " + error, "error");
+            }
+        });
     });
 
     // Event handler for giravee details popup
@@ -366,6 +378,7 @@ $(document).ready(function() {
             popupContent += '<p class="giravee-detail"><span class="giravee-label">Amount:</span> ' + giravee.amount + '</p>';
             popupContent += '<p class="giravee-detail"><span class="giravee-label">Description:</span> ' + giravee.description + '</p>';
             popupContent += '<p class="giravee-detail"><span class="giravee-label">Weight:</span> ' + giravee.weight + '</p>';
+            popupContent += '<p class="giravee-detail"><span class="giravee-label">Interest Type:</span> ' + giravee.interest_type + '</p>';
             popupContent += '<p class="giravee-detail"><span class="giravee-label">Interest Rate:</span> ' + giravee.interest_rate + '</p>';
             popupContent += '<p class="giravee-detail"><span class="giravee-label">Locker Number:</span> ' + giravee.locker_number + '</p>';
             popupContent += '<p class="giravee-detail"><span class="giravee-label">Date:</span> ' + formatDate(giravee.start_date) + '</p>';

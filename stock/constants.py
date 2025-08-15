@@ -99,3 +99,12 @@ class LockerNumberChoices(Enum):
     @classmethod
     def choices(cls):
         return [(choice.value, choice.name.title()) for choice in cls]
+
+
+class InterestChoices(Enum):
+    SIMPLE = 'Simple'
+    COMPOUND = 'Compound'
+
+    @classmethod
+    def choices(cls):
+        return [(choice.value, choice.name) for choice in cls]

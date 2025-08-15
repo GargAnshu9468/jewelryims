@@ -15,7 +15,7 @@ from decimal import Decimal
 @login_required
 def suppliers(request):
 
-    suppliers_list = Supplier.objects.filter().order_by('-date')
+    suppliers_list = Supplier.objects.filter().order_by('id')
 
     paginator = Paginator(list(suppliers_list), 6)
     page_number = request.GET.get('page')
@@ -145,7 +145,7 @@ def search_supplier(request):
     if not search_text:
         return JsonResponse({'status': 'error', 'message': 'Search term missing'}, status=400)
 
-    suppliers_list = Supplier.objects.filter(name__icontains=search_text).order_by('-date')
+    suppliers_list = Supplier.objects.filter(name__icontains=search_text).order_by('id')
     suppliers = render(request, 'transactions/supplier-search.html', {'suppliers': list(suppliers_list)}).content.decode('utf-8')
 
     return JsonResponse({'suppliers': suppliers})
@@ -154,7 +154,7 @@ def search_supplier(request):
 @login_required
 def purchases(request):
 
-    purchases_list = PurchaseItem.objects.filter().order_by('-id')
+    purchases_list = PurchaseItem.objects.filter().order_by('id')
 
     paginator = Paginator(list(purchases_list), 6)
     page_number = request.GET.get('page')
@@ -402,7 +402,7 @@ def search_purchase(request):
     if not search_text:
         return JsonResponse({'status': 'error', 'message': 'Search term missing'}, status=400)
 
-    purchases_list = PurchaseItem.objects.filter(billno__supplier__name__icontains=search_text).order_by('-date')
+    purchases_list = PurchaseItem.objects.filter(billno__supplier__name__icontains=search_text).order_by('id')
     purchases = render(request, 'transactions/purchase-search.html', {'purchases': list(purchases_list)}).content.decode('utf-8')
 
     return JsonResponse({'purchases': purchases})
@@ -411,7 +411,7 @@ def search_purchase(request):
 @login_required
 def sales(request):
 
-    sales_list = SaleItem.objects.filter().order_by('-id')
+    sales_list = SaleItem.objects.filter().order_by('id')
 
     paginator = Paginator(list(sales_list), 6)
     page_number = request.GET.get('page')
@@ -692,7 +692,7 @@ def search_sale(request):
     if not search_text:
         return JsonResponse({'status': 'error', 'message': 'Search term missing'}, status=400)
 
-    sales_list = SaleItem.objects.filter(billno__customer__name__icontains=search_text).order_by('-date')
+    sales_list = SaleItem.objects.filter(billno__customer__name__icontains=search_text).order_by('id')
     sales = render(request, 'transactions/sale-search.html', {'sales': list(sales_list)}).content.decode('utf-8')
 
     return JsonResponse({'sales': sales})
@@ -701,7 +701,7 @@ def search_sale(request):
 @login_required
 def customers(request):
 
-    customer_list = Customer.objects.filter().order_by('-date')
+    customer_list = Customer.objects.filter().order_by('id')
 
     paginator = Paginator(list(customer_list), 6)
     page_number = request.GET.get('page')
@@ -832,7 +832,7 @@ def search_customer(request):
     if not search_text:
         return JsonResponse({'status': 'error', 'message': 'Search term missing'}, status=400)
 
-    customers_list = Customer.objects.filter(name__icontains=search_text).order_by('-date')
+    customers_list = Customer.objects.filter(name__icontains=search_text).order_by('id')
     customers = render(request, 'transactions/customer-search.html', {'customers': list(customers_list)}).content.decode('utf-8')
 
     return JsonResponse({'customers': customers})

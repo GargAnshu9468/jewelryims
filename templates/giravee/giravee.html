@@ -143,15 +143,6 @@
                     </div>
 
                     <div class="col">
-                        <div class="form-group">
-                            <label for="giravee-interest-rate">Interest Rate:</label>
-                            <input type="number" class="form-control" id="add-giravee-interest-rate" name="add-giravee-interest-rate">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group row">
-                    <div class="col">
                         <label for="add-giravee-locker-number">Locker Number:</label>
 
                         <select class="form-control" id="add-giravee-locker-number" name="add-giravee-locker-number">
@@ -161,7 +152,29 @@
                             {% endfor %}
                         </select>
                     </div>
+                </div>
 
+                <div class="form-group row">
+                    <div class="col">
+                        <label for="add-giravee-interest-type">Interest Type:</label>
+
+                        <select class="form-control" id="add-giravee-interest-type" name="add-giravee-interest-type">
+                            <option value=""> --- Select Interest Type --- </option>
+                            {% for value, label in interest_choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="giravee-interest-rate">Interest Rate:</label>
+                            <input type="number" class="form-control" id="add-giravee-interest-rate" name="add-giravee-interest-rate">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group row">
                     <div class="col">
                         <label for="add-giravee-start-date">Start Date:</label>
                         <input type="date" class="form-control" id="add-giravee-start-date" name="add-giravee-start-date" value="{{ today|date:'Y-m-d' }}">
@@ -198,40 +211,45 @@
 
                 <br>
 
-                <div class="form-group">
-                    <label for="giravee-name">Name:</label>
-                    <input type="text" class="form-control" id="edit-giravee-name" name="edit-giravee-name">
-                </div>
-
                 <div class="form-group row">
                     <div class="col">
-                        <div class="form-group">
-                            <label for="giravee-amount">Amount Given:</label>
-                            <input type="number" class="form-control" id="edit-giravee-amount" name="edit-giravee-amount">
-                        </div>
+                        <label for="giravee-name">Name:</label>
+                        <input type="text" class="form-control" id="edit-giravee-name" name="edit-giravee-name">
                     </div>
 
                     <div class="col">
-                        <div class="form-group">
-                            <label for="giravee-description">Description:</label>
-                            <input type="text" class="form-control" id="edit-giravee-description" name="edit-giravee-description">
-                        </div>
+                        <label for="giravee-amount">Amount Given:</label>
+                        <input type="number" class="form-control" id="edit-giravee-amount" name="edit-giravee-amount">
                     </div>
                 </div>
 
                 <div class="form-group row">
                     <div class="col">
-                        <div class="form-group">
-                            <label for="giravee-weight">Weight (g):</label>
-                            <input type="number" class="form-control" id="edit-giravee-weight" name="edit-giravee-weight">
-                        </div>
+                        <label for="giravee-weight">Weight (g):</label>
+                        <input type="number" class="form-control" id="edit-giravee-weight" name="edit-giravee-weight">
                     </div>
 
                     <div class="col">
-                        <div class="form-group">
-                            <label for="giravee-interest-rate">Interest Rate:</label>
-                            <input type="number" class="form-control" id="edit-giravee-interest-rate" name="edit-giravee-interest-rate">
-                        </div>
+                        <label for="giravee-description">Description:</label>
+                        <input type="text" class="form-control" id="edit-giravee-description" name="edit-giravee-description">
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col">
+                        <label for="edit-giravee-interest-type">Interest Type:</label>
+
+                        <select class="form-control" id="edit-giravee-interest-type" name="edit-giravee-interest-type">
+                            <option value=""> --- Select Interest Type --- </option>
+                            {% for value, label in interest_choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col">
+                        <label for="giravee-interest-rate">Interest Rate:</label>
+                        <input type="number" class="form-control" id="edit-giravee-interest-rate" name="edit-giravee-interest-rate">
                     </div>
                 </div>
 
