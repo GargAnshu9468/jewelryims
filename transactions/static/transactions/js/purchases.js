@@ -596,59 +596,6 @@ $(document).ready(function() {
         });
     });
 
-    // Event handler to fetch and display search results
-
-    // $('#searchButton').click(function(event) {
-    //     event.preventDefault();
-
-    //     var csrftoken = getCookie('csrftoken');
-
-    //     var searchText = $('#searchInput').val().trim();
-    //     var startDate = $('#searchStartDate').val();
-    //     var endDate = $('#searchEndDate').val();
-
-    //     if (!searchText && !startDate && !endDate) {
-    //         swal("Error", "Please enter a search term or date range", "error");
-    //         return;
-    //     }
-
-    //     if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
-    //         var temp = startDate;
-    //         startDate = endDate;
-    //         endDate = temp;
-    //     }
-
-    //     $.ajax({
-    //         url: '/transactions/search-purchase/',
-    //         type: 'POST',
-    //         headers: {
-    //             'X-CSRFToken': csrftoken
-    //         },
-    //         data: {
-    //             'search_text': searchText,
-    //             'start_date': startDate,
-    //             'end_date': endDate
-    //         },
-    //         success: function(response) {
-
-    //             if (response.purchases.trim() === '') {
-    //                 $('tbody').empty();
-    //                 swal("No Content", "No content found", "info");
-    //                 $('#pagination-search').hide();
-    //                 $('#pagination-main').hide();
-    //             } else {
-    //                 $('tbody').html(response.purchases);
-    //                 $('#pagination-main').hide();
-    //                 $('#pagination-search').show();
-    //             }
-
-    //         },
-    //         error: function(xhr, status, error) {
-    //             swal("Error", "Error searching purchase: " + error, "error");
-    //         }
-    //     });
-    // });
-
     // Search button click
 
     $('#searchButton').click(function(event) {
@@ -671,6 +618,17 @@ $(document).ready(function() {
         var startDate = $('#searchStartDate').val();
         var endDate = $('#searchEndDate').val();
 
+        // if (!searchText && !startDate && !endDate) {
+        //     swal("Error", "Please enter a search term or date range", "error");
+        //     return;
+        // }
+
+        if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+            var temp = startDate;
+            startDate = endDate;
+            endDate = temp;
+        }
+
         $.ajax({
             url: '/transactions/search-purchase/',
             type: 'POST',
@@ -682,9 +640,16 @@ $(document).ready(function() {
                 'page': page
             },
             success: function(response) {
-                $('tbody').html(response.purchases);
-                $('#pagination-main').hide();
-                $('#pagination-search').html(response.pagination_html).show();
+                if (response.purchases.trim() === '') {
+                    $('tbody').empty();
+                    swal("No Content", "No content found", "info");
+                    $('#pagination-search').hide();
+                    $('#pagination-main').hide();
+                } else {
+                    $('tbody').html(response.purchases);
+                    $('#pagination-main').hide();
+                    $('#pagination-search').html(response.pagination_html).show();
+                }
             },
             error: function(xhr, status, error) {
                 swal("Error", "Error searching purchases: " + error, "error");

@@ -589,59 +589,6 @@ $(document).ready(function() {
         });
     });
 
-    // Event handler to fetch and display search results
-
-    // $('#searchButton').click(function(event) {
-    //     event.preventDefault();
-
-    //     var csrftoken = getCookie('csrftoken');
-
-    //     var searchText = $('#searchInput').val().trim();
-    //     var startDate = $('#searchStartDate').val();
-    //     var endDate = $('#searchEndDate').val();
-
-    //     if (!searchText && !startDate && !endDate) {
-    //         swal("Error", "Please enter a search term or date range", "error");
-    //         return;
-    //     }
-
-    //     if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
-    //         var temp = startDate;
-    //         startDate = endDate;
-    //         endDate = temp;
-    //     }
-
-    //     $.ajax({
-    //         url: '/transactions/search-sale/',
-    //         type: 'POST',
-    //         headers: {
-    //             'X-CSRFToken': csrftoken
-    //         },
-    //         data: {
-    //             'search_text': searchText,
-    //             'start_date': startDate,
-    //             'end_date': endDate
-    //         },
-    //         success: function(response) {
-
-    //             if (response.sales.trim() === '') {
-    //                 $('tbody').empty();
-    //                 swal("No Content", "No content found", "info");
-    //                 $('#pagination-search').hide();
-    //                 $('#pagination-main').hide();
-    //             } else {
-    //                 $('tbody').html(response.sales);
-    //                 $('#pagination-main').hide();
-    //                 $('#pagination-search').show();
-    //             }
-
-    //         },
-    //         error: function(xhr, status, error) {
-    //             swal("Error", "Error searching sale: " + error, "error");
-    //         }
-    //     });
-    // });
-
     $('#searchButton').click(function(event) {
         event.preventDefault();
         performSearch(1);
@@ -662,6 +609,17 @@ $(document).ready(function() {
         var startDate = $('#searchStartDate').val();
         var endDate = $('#searchEndDate').val();
 
+        // if (!searchText && !startDate && !endDate) {
+        //     swal("Error", "Please enter a search term or date range", "error");
+        //     return;
+        // }
+
+        if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+            var temp = startDate;
+            startDate = endDate;
+            endDate = temp;
+        }
+
         $.ajax({
             url: '/transactions/search-sale/',
             type: 'POST',
@@ -673,9 +631,16 @@ $(document).ready(function() {
                 'page': page
             },
             success: function(response) {
-                $('tbody').html(response.sales);
-                $('#pagination-main').hide();
-                $('#pagination-search').html(response.pagination_html).show();
+                if (response.sales.trim() === '') {
+                    $('tbody').empty();
+                    swal("No Content", "No content found", "info");
+                    $('#pagination-search').hide();
+                    $('#pagination-main').hide();
+                } else {
+                    $('tbody').html(response.sales);
+                    $('#pagination-main').hide();
+                    $('#pagination-search').html(response.pagination_html).show();
+                }
             },
             error: function(xhr, status, error) {
                 swal("Error", "Error searching sales: " + error, "error");
