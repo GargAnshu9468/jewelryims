@@ -159,6 +159,7 @@ def search_stock(request):
     search_text = request.POST.get('search_text', '').strip()
     start_date_str = request.POST.get('start_date', '').strip()
     end_date_str = request.POST.get('end_date', '').strip()
+    page_number = request.POST.get('page', 1)
 
     # Parse dates safely
 
@@ -185,6 +186,21 @@ def search_stock(request):
         query &= Q(date__lte=end_date)
 
     stocks_list = Stock.objects.filter(query).order_by('-id')
-    stocks = render(request, 'stock/stock-search.html', {'stocks': list(stocks_list)}).content.decode('utf-8')
+    paginator = Paginator(stocks_list, 6)
 
-    return JsonResponse({'stocks': stocks})
+    try:
+        pagination = paginator.page(page_number)
+
+    except PageNotAnInteger:
+        pagination = paginator.page(1)
+
+    except EmptyPage:
+        pagination = paginator.page(paginator.num_pages)
+
+    stocks_html = render(request, 'stock/stock-search.html', {'stocks': pagination}).content.decode('utf-8')
+    pagination_html = render(request, 'common/pagination-search.html', {'pagination': pagination}).content.decode('utf-8')
+
+    return JsonResponse({
+        'stocks': stocks_html,
+        'pagination_html': pagination_html
+    })

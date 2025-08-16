@@ -201,6 +201,7 @@ def search_giravee(request):
     search_text = request.POST.get('search_text', '').strip()
     start_date_str = request.POST.get('start_date', '').strip()
     end_date_str = request.POST.get('end_date', '').strip()
+    page_number = request.POST.get('page', 1)
 
     # Parse dates safely
 
@@ -227,14 +228,24 @@ def search_giravee(request):
         query &= Q(start_date__lte=end_date)
 
     giravee_list = Giravee.objects.filter(query).order_by('-id')
+    paginator = Paginator(giravee_list, 6)
 
-    giravees_html = render(
-        request,
-        'giravee/giravee-search.html',
-        {'giravees': giravee_list}
-    ).content.decode('utf-8')
+    try:
+        pagination = paginator.page(page_number)
 
-    return JsonResponse({'giravees': giravees_html})
+    except PageNotAnInteger:
+        pagination = paginator.page(1)
+
+    except EmptyPage:
+        pagination = paginator.page(paginator.num_pages)
+
+    giravees_html = render(request, 'giravee/giravee-search.html', {'giravees': pagination}).content.decode('utf-8')
+    pagination_html = render(request, 'common/pagination-search.html', {'pagination': pagination}).content.decode('utf-8')
+
+    return JsonResponse({
+        'giravees': giravees_html,
+        'pagination_html': pagination_html
+    })
 
 
 @login_required

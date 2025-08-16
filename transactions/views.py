@@ -177,6 +177,7 @@ def search_supplier(request):
     search_text = request.POST.get('search_text', '').strip()
     start_date_str = request.POST.get('start_date', '').strip()
     end_date_str = request.POST.get('end_date', '').strip()
+    page_number = request.POST.get('page', 1)
 
     # Parse dates safely
 
@@ -203,9 +204,24 @@ def search_supplier(request):
         query &= Q(date__lte=end_date)
 
     suppliers_list = Supplier.objects.filter(query).order_by('-id')
-    suppliers = render(request, 'transactions/supplier-search.html', {'suppliers': list(suppliers_list)}).content.decode('utf-8')
+    paginator = Paginator(suppliers_list, 6)
 
-    return JsonResponse({'suppliers': suppliers})
+    try:
+        pagination = paginator.page(page_number)
+
+    except PageNotAnInteger:
+        pagination = paginator.page(1)
+
+    except EmptyPage:
+        pagination = paginator.page(paginator.num_pages)
+
+    suppliers_html = render(request, 'transactions/supplier-search.html', {'suppliers': pagination}).content.decode('utf-8')
+    pagination_html = render(request, 'common/pagination-search.html', {'pagination': pagination}).content.decode('utf-8')
+
+    return JsonResponse({
+        'suppliers': suppliers_html,
+        'pagination_html': pagination_html
+    })
 
 
 @login_required
@@ -490,6 +506,7 @@ def search_purchase(request):
     search_text = request.POST.get('search_text', '').strip()
     start_date_str = request.POST.get('start_date', '').strip()
     end_date_str = request.POST.get('end_date', '').strip()
+    page_number = request.POST.get('page', 1)
 
     # Parse dates safely
 
@@ -516,9 +533,24 @@ def search_purchase(request):
         query &= Q(date__lte=end_date)
 
     purchases_list = PurchaseItem.objects.filter(query).order_by('-id')
-    purchases = render(request, 'transactions/purchase-search.html', {'purchases': list(purchases_list)}).content.decode('utf-8')
+    paginator = Paginator(purchases_list, 6)
 
-    return JsonResponse({'purchases': purchases})
+    try:
+        pagination = paginator.page(page_number)
+
+    except PageNotAnInteger:
+        pagination = paginator.page(1)
+
+    except EmptyPage:
+        pagination = paginator.page(paginator.num_pages)
+
+    purchases_html = render(request, 'transactions/purchase-search.html', {'purchases': pagination}).content.decode('utf-8')
+    pagination_html = render(request, 'common/pagination-search.html', {'pagination': pagination}).content.decode('utf-8')
+
+    return JsonResponse({
+        'purchases': purchases_html,
+        'pagination_html': pagination_html
+    })
 
 
 @login_required
@@ -837,6 +869,7 @@ def search_sale(request):
     search_text = request.POST.get('search_text', '').strip()
     start_date_str = request.POST.get('start_date', '').strip()
     end_date_str = request.POST.get('end_date', '').strip()
+    page_number = request.POST.get('page', 1)
 
     # Parse dates safely
 
@@ -863,9 +896,24 @@ def search_sale(request):
         query &= Q(date__lte=end_date)
 
     sales_list = SaleItem.objects.filter(query).order_by('-id')
-    sales = render(request, 'transactions/sale-search.html', {'sales': list(sales_list)}).content.decode('utf-8')
+    paginator = Paginator(sales_list, 6)
 
-    return JsonResponse({'sales': sales})
+    try:
+        pagination = paginator.page(page_number)
+
+    except PageNotAnInteger:
+        pagination = paginator.page(1)
+
+    except EmptyPage:
+        pagination = paginator.page(paginator.num_pages)
+
+    sales_html = render(request, 'transactions/sale-search.html', {'sales': pagination}).content.decode('utf-8')
+    pagination_html = render(request, 'common/pagination-search.html', {'pagination': pagination}).content.decode('utf-8')
+
+    return JsonResponse({
+        'sales': sales_html,
+        'pagination_html': pagination_html
+    })
 
 
 @login_required
@@ -1033,6 +1081,7 @@ def search_customer(request):
     search_text = request.POST.get('search_text', '').strip()
     start_date_str = request.POST.get('start_date', '').strip()
     end_date_str = request.POST.get('end_date', '').strip()
+    page_number = request.POST.get('page', 1)
 
     # Parse dates safely
 
@@ -1059,9 +1108,24 @@ def search_customer(request):
         query &= Q(date__lte=end_date)
 
     customers_list = Customer.objects.filter(query).order_by('-id')
-    customers = render(request, 'transactions/customer-search.html', {'customers': list(customers_list)}).content.decode('utf-8')
+    paginator = Paginator(customers_list, 6)
 
-    return JsonResponse({'customers': customers})
+    try:
+        pagination = paginator.page(page_number)
+
+    except PageNotAnInteger:
+        pagination = paginator.page(1)
+
+    except EmptyPage:
+        pagination = paginator.page(paginator.num_pages)
+
+    customers_html = render(request, 'transactions/customer-search.html', {'customers': pagination}).content.decode('utf-8')
+    pagination_html = render(request, 'common/pagination-search.html', {'pagination': pagination}).content.decode('utf-8')
+
+    return JsonResponse({
+        'customers': customers_html,
+        'pagination_html': pagination_html
+    })
 
 
 @login_required
