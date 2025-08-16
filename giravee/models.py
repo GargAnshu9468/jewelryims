@@ -1,7 +1,6 @@
 from stock.constants import LockerNumberChoices, InterestChoices
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
-from calendar import monthrange
 from django.db import models
 from decimal import Decimal
 from datetime import date
@@ -27,42 +26,6 @@ class Giravee(models.Model):
     def total_paid_amount(self):
         return sum(txn.amount for txn in self.transactions.all())
 
-    # def calculate_interest(self, end_date=None):
-    #     principal = Decimal(str(self.amount))
-    #     monthly_rate = Decimal(str(self.interest_rate)) / Decimal('100')
-
-    #     start = self.start_date
-    #     end = end_date or timezone.now().date()
-
-    #     # Full months
-    #     rd = relativedelta(end, start)
-    #     full_months = rd.years * 12 + rd.months
-
-    #     # Partial month days
-    #     partial_days = (end - (start + relativedelta(months=full_months))).days
-    #     days_in_partial_month = (start + relativedelta(months=full_months+1) - (start + relativedelta(months=full_months))).days
-
-    #     total_interest = Decimal('0.00')
-    #     yearly_interest_accum = Decimal('0.00')
-
-    #     # Interest for full months
-    #     for _ in range(full_months):
-    #         interest = (principal * monthly_rate).quantize(Decimal('0.01'))
-
-    #         total_interest += interest
-    #         yearly_interest_accum += interest
-
-    #         if yearly_interest_accum and (_ + 1) % 12 == 0:
-    #             principal += yearly_interest_accum
-    #             yearly_interest_accum = Decimal('0.00')
-
-    #     # Interest for partial month (pro-rated)
-    #     if partial_days > 0:
-    #         partial_interest = (principal * monthly_rate * Decimal(partial_days) / Decimal(days_in_partial_month)).quantize(Decimal('0.01'))
-    #         total_interest += partial_interest
-
-    #     return total_interest
-
     def calculate_interest(self, end_date=None):
         principal = Decimal(str(self.amount))
         monthly_rate = Decimal(str(self.interest_rate)) / Decimal('100')
@@ -70,33 +33,28 @@ class Giravee(models.Model):
         start = self.start_date
         end = end_date or timezone.now().date()
 
-        # Full months
         rd = relativedelta(end, start)
         full_months = rd.years * 12 + rd.months
 
-        # Partial month days
         partial_days = (end - (start + relativedelta(months=full_months))).days
-        partial_month_date = start + relativedelta(months=full_months)
-        days_in_partial_month = monthrange(partial_month_date.year, partial_month_date.month)[1]
+        days_in_partial_month = Decimal('30')
 
         total_interest = Decimal('0.00')
         yearly_interest_accum = Decimal('0.00')
 
-        # Interest for full months
         for m in range(full_months):
             interest = (principal * monthly_rate).quantize(Decimal('0.01'))
             total_interest += interest
 
             if self.interest_type == InterestChoices.COMPOUND.value:
                 yearly_interest_accum += interest
-                # Apply compounding yearly
+
                 if yearly_interest_accum and (m + 1) % 12 == 0:
                     principal += yearly_interest_accum
                     yearly_interest_accum = Decimal('0.00')
 
-        # Interest for partial month (pro-rated)
         if partial_days > 0:
-            partial_interest = (principal * monthly_rate * Decimal(partial_days) / Decimal(days_in_partial_month)).quantize(Decimal('0.01'))
+            partial_interest = (principal * monthly_rate * Decimal(partial_days) / days_in_partial_month).quantize(Decimal('0.01'))
             total_interest += partial_interest
 
         return total_interest
