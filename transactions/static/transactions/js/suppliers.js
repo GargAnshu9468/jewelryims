@@ -268,7 +268,10 @@ $(document).ready(function() {
             success: function(response) {
 
                 if (response.suppliers.trim() === '') {
+                    $('tbody').empty();
                     swal("No Content", "No content found", "info");
+                    $('#pagination-search').hide();
+                    $('#pagination-main').hide();
                 } else {
                     $('tbody').html(response.suppliers);
                     $('#pagination-main').hide();
@@ -282,7 +285,7 @@ $(document).ready(function() {
         });
     });
 
-    // Event handler to delete search results
+    // Event handler to delete suppliers
 
     $('#deleteButton').click(function(event) {
         event.preventDefault();
@@ -304,24 +307,38 @@ $(document).ready(function() {
             endDate = temp;
         }
 
-        $.ajax({
-            url: '/transactions/delete-supplier/',
-            type: 'POST',
-            headers: {
-                'X-CSRFToken': csrftoken
-            },
-            data: {
-                'search_text': searchText,
-                'start_date': startDate,
-                'end_date': endDate
-            },
-            success: function(response) {
-                swal("Success", "Suppliers deleted successfully", "success").then((value) => {
-                    location.reload();
+        swal({
+            title: "Are you sure?",
+            text: "This will permanently delete the matching suppliers.",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                $.ajax({
+                    url: '/transactions/delete-supplier/',
+                    type: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    data: {
+                        'search_text': searchText,
+                        'start_date': startDate,
+                        'end_date': endDate
+                    },
+                    success: function(response) {
+                        if (response.status === 'info') {
+                            swal("No Content", response.message, "info");
+                        } else {
+                            swal("Success", response.message, "success").then(() => {
+                                location.reload();
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        swal("Error", "Error deleting suppliers: " + error, "error");
+                    }
                 });
-            },
-            error: function(xhr, status, error) {
-                swal("Error", "Error deleting suppliers: " + error, "error");
             }
         });
     });

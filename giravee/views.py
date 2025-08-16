@@ -9,7 +9,6 @@ from .utils import parse_fields_from_request
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.db.models import Q
-from datetime import date
 
 
 @login_required
@@ -145,21 +144,54 @@ def edit_giravee(request):
 def delete_giravee(request):
 
     giravee_id = request.POST.get('id')
+    search_text = request.POST.get('search_text', '').strip()
+    start_date_str = request.POST.get('start_date', '').strip()
+    end_date_str = request.POST.get('end_date', '').strip()
 
-    if not giravee_id:
-        return JsonResponse({'status': 'error', 'message': 'Giravee ID is required.'}, status=400)
+    if giravee_id:
+
+        try:
+            giravee = Giravee.objects.get(id=giravee_id)
+            giravee.delete()
+
+            return JsonResponse({'status': 'success', 'message': 'Giravee deleted successfully.'})
+
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Giravee not found.'}, status=404)
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    start_date = parse_date(start_date_str) if start_date_str else None
+    end_date = parse_date(end_date_str) if end_date_str else None
+
+    if start_date and end_date and end_date < start_date:
+        start_date, end_date = end_date, start_date
+
+    query = Q()
+
+    if search_text:
+        query &= Q(name__icontains=search_text)
+
+    if start_date and end_date:
+        query &= Q(start_date__range=(start_date, end_date))
+
+    elif start_date:
+        query &= Q(start_date__gte=start_date)
+
+    elif end_date:
+        query &= Q(start_date__lte=end_date)
 
     try:
-        giravee = Giravee.objects.get(id=giravee_id)
-        giravee.delete()
+        deleted_count, _ = Giravee.objects.filter(query).delete()
 
-    except ObjectDoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Giravee not found.'}, status=404)
+        if deleted_count == 0:
+            return JsonResponse({'status': 'info', 'message': 'No matching giravees found to delete.'})
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-    return JsonResponse({'status': 'success', 'message': 'Giravee deleted successfully.'})
+    return JsonResponse({'status': 'success', 'message': f'{deleted_count} giravees deleted successfully.'})
 
 
 @login_required

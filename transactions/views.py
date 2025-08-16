@@ -4,10 +4,11 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.core.exceptions import ObjectDoesNotExist
 from giravee.utils import parse_fields_from_request
+from django.utils.dateparse import parse_date
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.db.models import Sum, Q
 from django.db import transaction
-from django.db.models import Sum
 from giravee.utils import Trim
 from decimal import Decimal
 
@@ -102,21 +103,54 @@ def edit_supplier(request):
 def delete_supplier(request):
 
     supplier_id = request.POST.get('id')
+    search_text = request.POST.get('search_text', '').strip()
+    start_date_str = request.POST.get('start_date', '').strip()
+    end_date_str = request.POST.get('end_date', '').strip()
 
-    if not supplier_id:
-        return JsonResponse({'status': 'error', 'message': 'Supplier ID is required.'}, status=400)
+    if supplier_id:
+
+        try:
+            supplier = Supplier.objects.get(id=supplier_id)
+            supplier.delete()
+
+            return JsonResponse({'status': 'success', 'message': 'Supplier deleted successfully.'})
+
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Supplier not found.'}, status=404)
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    start_date = parse_date(start_date_str) if start_date_str else None
+    end_date = parse_date(end_date_str) if end_date_str else None
+
+    if start_date and end_date and end_date < start_date:
+        start_date, end_date = end_date, start_date
+
+    query = Q()
+
+    if search_text:
+        query &= Q(name__icontains=search_text)
+
+    if start_date and end_date:
+        query &= Q(date__range=(start_date, end_date))
+
+    elif start_date:
+        query &= Q(date__gte=start_date)
+
+    elif end_date:
+        query &= Q(date__lte=end_date)
 
     try:
-        supplier = Supplier.objects.get(id=supplier_id)
-        supplier.delete()
+        deleted_count, _ = Supplier.objects.filter(query).delete()
 
-    except ObjectDoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Supplier not found.'}, status=404)
+        if deleted_count == 0:
+            return JsonResponse({'status': 'info', 'message': 'No matching suppliers found to delete.'})
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-    return JsonResponse({'status': 'success', 'message': 'Supplier deleted successfully.'})
+    return JsonResponse({'status': 'success', 'message': f'{deleted_count} suppliers deleted successfully.'})
 
 
 @login_required
@@ -140,12 +174,35 @@ def supplier_details(request):
 @require_POST
 def search_supplier(request):
 
-    search_text = request.POST.get('search_text', '')
+    search_text = request.POST.get('search_text', '').strip()
+    start_date_str = request.POST.get('start_date', '').strip()
+    end_date_str = request.POST.get('end_date', '').strip()
 
-    if not search_text:
-        return JsonResponse({'status': 'error', 'message': 'Search term missing'}, status=400)
+    # Parse dates safely
 
-    suppliers_list = Supplier.objects.filter(name__icontains=search_text).order_by('-id')
+    start_date = parse_date(start_date_str) if start_date_str else None
+    end_date = parse_date(end_date_str) if end_date_str else None
+
+    # Swap if end_date is earlier than start_date
+
+    if start_date and end_date and end_date < start_date:
+        start_date, end_date = end_date, start_date
+
+    query = Q()
+
+    if search_text:
+        query &= Q(name__icontains=search_text)
+
+    if start_date and end_date:
+        query &= Q(date__range=(start_date, end_date))
+
+    elif start_date:
+        query &= Q(date__gte=start_date)
+
+    elif end_date:
+        query &= Q(date__lte=end_date)
+
+    suppliers_list = Supplier.objects.filter(query).order_by('-id')
     suppliers = render(request, 'transactions/supplier-search.html', {'suppliers': list(suppliers_list)}).content.decode('utf-8')
 
     return JsonResponse({'suppliers': suppliers})
@@ -376,33 +433,89 @@ def update_purchase(request):
 def delete_purchase(request):
 
     purchase_id = request.POST.get('id')
+    search_text = request.POST.get('search_text', '').strip()
+    start_date_str = request.POST.get('start_date', '').strip()
+    end_date_str = request.POST.get('end_date', '').strip()
 
-    if not purchase_id:
-        return JsonResponse({'status': 'error', 'message': 'Purchase ID is required.'}, status=400)
+    if purchase_id:
+
+        try:
+            purchase = PurchaseBill.objects.get(pk=purchase_id)
+            purchase.delete()
+
+            return JsonResponse({'status': 'success', 'message': 'Purchase deleted successfully'})
+
+        except PurchaseBill.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Purchase not found'}, status=404)
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    start_date = parse_date(start_date_str) if start_date_str else None
+    end_date = parse_date(end_date_str) if end_date_str else None
+
+    if start_date and end_date and end_date < start_date:
+        start_date, end_date = end_date, start_date
+
+    query = Q()
+
+    if search_text:
+        query &= Q(supplier__name__icontains=search_text)
+
+    if start_date and end_date:
+        query &= Q(time__range=(start_date, end_date))
+
+    elif start_date:
+        query &= Q(time__gte=start_date)
+
+    elif end_date:
+        query &= Q(time__lte=end_date)
 
     try:
-        purchase = PurchaseBill.objects.get(pk=purchase_id)
-        purchase.delete()
+        deleted_count, _ = PurchaseBill.objects.filter(query).delete()
 
-        return JsonResponse({'status': 'success', 'message': 'Purchase deleted successfully'})
-
-    except PurchaseBill.DoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Purchase not found'}, status=404)
+        if deleted_count == 0:
+            return JsonResponse({'status': 'info', 'message': 'No matching purchases found to delete.'})
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'success', 'message': f'{deleted_count} purchases deleted successfully.'})
 
 
 @login_required
 @require_POST
 def search_purchase(request):
 
-    search_text = request.POST.get('search_text', '')
+    search_text = request.POST.get('search_text', '').strip()
+    start_date_str = request.POST.get('start_date', '').strip()
+    end_date_str = request.POST.get('end_date', '').strip()
 
-    if not search_text:
-        return JsonResponse({'status': 'error', 'message': 'Search term missing'}, status=400)
+    # Parse dates safely
 
-    purchases_list = PurchaseItem.objects.filter(billno__supplier__name__icontains=search_text).order_by('-id')
+    start_date = parse_date(start_date_str) if start_date_str else None
+    end_date = parse_date(end_date_str) if end_date_str else None
+
+    # Swap if end_date is earlier than start_date
+
+    if start_date and end_date and end_date < start_date:
+        start_date, end_date = end_date, start_date
+
+    query = Q()
+
+    if search_text:
+        query &= Q(billno__supplier__name__icontains=search_text)
+
+    if start_date and end_date:
+        query &= Q(date__range=(start_date, end_date))
+
+    elif start_date:
+        query &= Q(date__gte=start_date)
+
+    elif end_date:
+        query &= Q(date__lte=end_date)
+
+    purchases_list = PurchaseItem.objects.filter(query).order_by('-id')
     purchases = render(request, 'transactions/purchase-search.html', {'purchases': list(purchases_list)}).content.decode('utf-8')
 
     return JsonResponse({'purchases': purchases})
@@ -654,45 +767,102 @@ def update_sale(request):
 def delete_sale(request):
 
     sale_id = request.POST.get('id')
+    search_text = request.POST.get('search_text', '').strip()
+    start_date_str = request.POST.get('start_date', '').strip()
+    end_date_str = request.POST.get('end_date', '').strip()
 
-    if not sale_id:
-        return JsonResponse({'status': 'error', 'message': 'Sale ID is required.'}, status=400)
+    if sale_id:
+
+        try:
+            sale = SaleBill.objects.get(pk=sale_id)
+
+            # with transaction.atomic():
+            #     sale_items = SaleItem.objects.filter(billno=sale)
+
+            #     for item in sale_items:
+            #         stock = item.stock
+
+            #         stock.quantity += item.quantity
+            #         stock.weight += item.weight or 0
+
+            #         stock.save()
+
+            sale.delete()
+
+            return JsonResponse({'status': 'success', 'message': 'Sale deleted successfully'})
+
+        except SaleBill.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Sale not found'}, status=404)
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    start_date = parse_date(start_date_str) if start_date_str else None
+    end_date = parse_date(end_date_str) if end_date_str else None
+
+    if start_date and end_date and end_date < start_date:
+        start_date, end_date = end_date, start_date
+
+    query = Q()
+
+    if search_text:
+        query &= Q(customer__name__icontains=search_text)
+
+    if start_date and end_date:
+        query &= Q(time__range=(start_date, end_date))
+
+    elif start_date:
+        query &= Q(time__gte=start_date)
+
+    elif end_date:
+        query &= Q(time__lte=end_date)
 
     try:
-        sale = SaleBill.objects.get(pk=sale_id)
+        deleted_count, _ = SaleBill.objects.filter(query).delete()
 
-        # with transaction.atomic():
-        #     sale_items = SaleItem.objects.filter(billno=sale)
-
-        #     for item in sale_items:
-        #         stock = item.stock
-
-        #         stock.quantity += item.quantity
-        #         stock.weight += item.weight or 0
-
-        #         stock.save()
-
-        sale.delete()
-
-        return JsonResponse({'status': 'success', 'message': 'Sale deleted successfully'})
-
-    except SaleBill.DoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Sale not found'}, status=404)
+        if deleted_count == 0:
+            return JsonResponse({'status': 'info', 'message': 'No matching sales found to delete.'})
 
     except Exception as e:
+        print(str(e))
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'success', 'message': f'{deleted_count} sales deleted successfully.'})
 
 
 @login_required
 @require_POST
 def search_sale(request):
 
-    search_text = request.POST.get('search_text', '')
+    search_text = request.POST.get('search_text', '').strip()
+    start_date_str = request.POST.get('start_date', '').strip()
+    end_date_str = request.POST.get('end_date', '').strip()
 
-    if not search_text:
-        return JsonResponse({'status': 'error', 'message': 'Search term missing'}, status=400)
+    # Parse dates safely
 
-    sales_list = SaleItem.objects.filter(billno__customer__name__icontains=search_text).order_by('-id')
+    start_date = parse_date(start_date_str) if start_date_str else None
+    end_date = parse_date(end_date_str) if end_date_str else None
+
+    # Swap if end_date is earlier than start_date
+
+    if start_date and end_date and end_date < start_date:
+        start_date, end_date = end_date, start_date
+
+    query = Q()
+
+    if search_text:
+        query &= Q(billno__customer__name__icontains=search_text)
+
+    if start_date and end_date:
+        query &= Q(date__range=(start_date, end_date))
+
+    elif start_date:
+        query &= Q(date__gte=start_date)
+
+    elif end_date:
+        query &= Q(date__lte=end_date)
+
+    sales_list = SaleItem.objects.filter(query).order_by('-id')
     sales = render(request, 'transactions/sale-search.html', {'sales': list(sales_list)}).content.decode('utf-8')
 
     return JsonResponse({'sales': sales})
@@ -789,21 +959,54 @@ def edit_customer(request):
 def delete_customer(request):
 
     customer_id = request.POST.get('id')
+    search_text = request.POST.get('search_text', '').strip()
+    start_date_str = request.POST.get('start_date', '').strip()
+    end_date_str = request.POST.get('end_date', '').strip()
 
-    if not customer_id:
-        return JsonResponse({'status': 'error', 'message': 'Customer ID is required.'}, status=400)
+    if customer_id:
+
+        try:
+            customer = Customer.objects.get(id=customer_id)
+            customer.delete()
+
+            return JsonResponse({'status': 'success', 'message': 'Customer deleted successfully.'})
+
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Customer not found.'}, status=404)
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    start_date = parse_date(start_date_str) if start_date_str else None
+    end_date = parse_date(end_date_str) if end_date_str else None
+
+    if start_date and end_date and end_date < start_date:
+        start_date, end_date = end_date, start_date
+
+    query = Q()
+
+    if search_text:
+        query &= Q(name__icontains=search_text)
+
+    if start_date and end_date:
+        query &= Q(date__range=(start_date, end_date))
+
+    elif start_date:
+        query &= Q(date__gte=start_date)
+
+    elif end_date:
+        query &= Q(date__lte=end_date)
 
     try:
-        customer = Customer.objects.get(id=customer_id)
-        customer.delete()
+        deleted_count, _ = Customer.objects.filter(query).delete()
 
-    except ObjectDoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Customer not found.'}, status=404)
+        if deleted_count == 0:
+            return JsonResponse({'status': 'info', 'message': 'No matching customers found to delete.'})
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-    return JsonResponse({'status': 'success', 'message': 'Customer deleted successfully.'})
+    return JsonResponse({'status': 'success', 'message': f'{deleted_count} customers deleted successfully.'})
 
 
 @login_required
@@ -827,12 +1030,35 @@ def customer_details(request):
 @require_POST
 def search_customer(request):
 
-    search_text = request.POST.get('search_text', '')
+    search_text = request.POST.get('search_text', '').strip()
+    start_date_str = request.POST.get('start_date', '').strip()
+    end_date_str = request.POST.get('end_date', '').strip()
 
-    if not search_text:
-        return JsonResponse({'status': 'error', 'message': 'Search term missing'}, status=400)
+    # Parse dates safely
 
-    customers_list = Customer.objects.filter(name__icontains=search_text).order_by('-id')
+    start_date = parse_date(start_date_str) if start_date_str else None
+    end_date = parse_date(end_date_str) if end_date_str else None
+
+    # Swap if end_date is earlier than start_date
+
+    if start_date and end_date and end_date < start_date:
+        start_date, end_date = end_date, start_date
+
+    query = Q()
+
+    if search_text:
+        query &= Q(name__icontains=search_text)
+
+    if start_date and end_date:
+        query &= Q(date__range=(start_date, end_date))
+
+    elif start_date:
+        query &= Q(date__gte=start_date)
+
+    elif end_date:
+        query &= Q(date__lte=end_date)
+
+    customers_list = Customer.objects.filter(query).order_by('-id')
     customers = render(request, 'transactions/customer-search.html', {'customers': list(customers_list)}).content.decode('utf-8')
 
     return JsonResponse({'customers': customers})

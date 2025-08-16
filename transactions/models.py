@@ -1,7 +1,6 @@
 from stock.constants import DiscountChoices, PaymentMethodChoices, LabourOrMakingChargeChoices
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.utils import timezone
 from django.db.models import Sum
 from stock.models import Stock
 from django.db import models

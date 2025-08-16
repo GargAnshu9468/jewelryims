@@ -268,7 +268,10 @@ $(document).ready(function() {
             success: function(response) {
 
                 if (response.customers.trim() === '') {
+                    $('tbody').empty();
                     swal("No Content", "No content found", "info");
+                    $('#pagination-search').hide();
+                    $('#pagination-main').hide();
                 } else {
                     $('tbody').html(response.customers);
                     $('#pagination-main').hide();
@@ -304,24 +307,38 @@ $(document).ready(function() {
             endDate = temp;
         }
 
-        $.ajax({
-            url: '/transactions/delete-customer/',
-            type: 'POST',
-            headers: {
-                'X-CSRFToken': csrftoken
-            },
-            data: {
-                'search_text': searchText,
-                'start_date': startDate,
-                'end_date': endDate
-            },
-            success: function(response) {
-                swal("Success", "Customers deleted successfully", "success").then((value) => {
-                    location.reload();
+        swal({
+            title: "Are you sure?",
+            text: "This will permanently delete the matching customers.",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                $.ajax({
+                    url: '/transactions/delete-customer/',
+                    type: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    data: {
+                        'search_text': searchText,
+                        'start_date': startDate,
+                        'end_date': endDate
+                    },
+                    success: function(response) {
+                        if (response.status === 'info') {
+                            swal("No Content", response.message, "info");
+                        } else {
+                            swal("Success", response.message, "success").then(() => {
+                                location.reload();
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        swal("Error", "Error deleting customers: " + error, "error");
+                    }
                 });
-            },
-            error: function(xhr, status, error) {
-                swal("Error", "Error deleting customers: " + error, "error");
             }
         });
     });
