@@ -57,7 +57,10 @@
                 </nav>
 
                 <!-- Search -->
-                {% include 'common/search.html' %}
+
+                {% if request.path != '/' %}
+                    {% include 'common/search.html' %}
+                {% endif %}
 
             </div>
         </nav>
