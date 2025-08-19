@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.views.generic import RedirectView
 from django.conf.urls.static import static
 from django.urls import path, include
 from django.contrib import admin
@@ -27,6 +28,7 @@ urlpatterns = [
     path('giravee/', include('giravee.urls')),
     path('accounts/', include('accounts.urls')),
     path('transactions/', include('transactions.urls')),
+    path('favicon.ico', RedirectView.as_view(url='/static/dashboard/img/favicon.ico')),
 ]
 
 if bool(settings.DEBUG):
