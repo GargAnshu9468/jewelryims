@@ -3,10 +3,12 @@ from django.contrib.auth.decorators import login_required
 from datetime import date, timedelta
 from django.shortcuts import render
 from django.db.models import Sum, F
+from giravee.models import Giravee
 
 
 @login_required
 def dashboard(request):
+
     today = date.today()
     last_month = today.replace(day=1) - timedelta(days=1)
 
@@ -24,7 +26,7 @@ def dashboard(request):
         total=Sum('quantity')
     )['total'] or 0
 
-    low_stock_items = Stock.objects.filter(quantity__lt=10, quantity__gt=0).count()
+    low_stock_items = Stock.objects.filter(quantity__lt=5, quantity__gt=0).count()
     out_of_stock_items = Stock.objects.filter(quantity=0).count()
 
     # Stock Turnover Ratio
@@ -92,6 +94,14 @@ def dashboard(request):
         (total_customers_last_month - total_customers) / total_customers_last_month * 100
     ) if total_customers_last_month > 0 else 0
 
+    total_giravee_amount = Giravee.objects.aggregate(
+        total=Sum('amount')
+    )['total'] or 0
+
+    total_collected_interest = Giravee.objects.filter(is_cleared=True).aggregate(
+        total=Sum('interest_amount')
+    )['total'] or 0
+
     context = {
         "page_title": "Dashboard",
         "breadcrumbs": breadcrumbs,
@@ -115,6 +125,8 @@ def dashboard(request):
         "sales_growth": round(sales_growth, 2),
         "return_on_investment": round(return_on_investment, 2),
         "churn_rate": round(churn_rate, 2),
+        "total_giravee_amount": round(total_giravee_amount, 2),
+        "total_collected_interest": round(total_collected_interest, 2),
     }
 
     return render(request, "dashboard/dashboard.html", context)
