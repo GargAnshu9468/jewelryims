@@ -61,6 +61,7 @@ function handleGiraveesData(response) {
     $('#edit-giravee-locker-number').val(giravees[0].locker_number);
     $('#edit-giravee-start-date').val(giravees[0].start_date);
     $('#edit-giravee-interest-type').val(giravees[0].interest_type);
+    $('#edit-giravee-total-days').val(giravees[0].days_since_start);
 
     var tbody = $('#transaction-history-body');
     tbody.empty();
@@ -451,6 +452,8 @@ $(document).ready(function() {
             popupContent += '<p class="giravee-detail"><span class="giravee-label">Interest Type:</span> ' + giravee.interest_type + '</p>';
             popupContent += '<p class="giravee-detail"><span class="giravee-label">Interest Rate:</span> ' + giravee.interest_rate + '</p>';
             popupContent += '<p class="giravee-detail"><span class="giravee-label">Locker Number:</span> ' + giravee.locker_number + '</p>';
+            popupContent += '<p class="giravee-detail"><span class="giravee-label">Paid Amount:</span> ' + giravee.paid_amount + '</p>';
+            popupContent += '<p class="giravee-detail"><span class="giravee-label">Is Cleared:</span> ' + (giravee.is_cleared ? 'Yes' : 'No') + '</p>';
             popupContent += '<p class="giravee-detail"><span class="giravee-label">Date:</span> ' + formatDate(giravee.start_date) + '</p>';
 
             popupContent += '</div>';

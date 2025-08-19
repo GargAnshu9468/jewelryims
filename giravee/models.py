@@ -19,6 +19,7 @@ class Giravee(models.Model):
     locker_number = models.CharField(max_length=2, choices=LockerNumberChoices.choices(), default=LockerNumberChoices.ONE.value)
     interest_type = models.CharField(max_length=10, choices=InterestChoices.choices(), default=InterestChoices.COMPOUND.value)
     start_date = models.DateField(default=date.today)
+    days_since_start = models.PositiveIntegerField(default=0)
     is_cleared = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -32,6 +33,8 @@ class Giravee(models.Model):
 
         start = self.start_date
         end = end_date or timezone.now().date()
+
+        self.days_since_start = (end - start).days
 
         rd = relativedelta(end, start)
         full_months = rd.years * 12 + rd.months
@@ -72,7 +75,8 @@ class Giravee(models.Model):
             due_amount_without_interest=due_amount_without_interest,
             due_amount=updated_due,
             paid_amount=paid_amount,
-            interest_amount=interest
+            interest_amount=interest,
+            days_since_start=self.days_since_start
         )
 
         if updated_due <= 0 and not self.is_cleared:
