@@ -49,7 +49,15 @@ def stock(request):
 @require_POST
 def get_stocks(request):
 
-    stocks_list = Stock.objects.filter().values()
+    data = request.POST.dict()
+    stock_id = data.get('id')
+
+    query = {}
+
+    if stock_id:
+        query['id'] = stock_id
+
+    stocks_list = Stock.objects.filter(**query).values()
     return JsonResponse({'stocks': list(stocks_list)})
 
 
