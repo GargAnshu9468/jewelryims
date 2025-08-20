@@ -200,7 +200,7 @@ $(document).ready(function() {
             success: function(response) {
                 swal("Success", "Stock updated successfully", "success").then((value) => {
                     hideModals();
-                    location.reload();
+                    // location.reload();
                 });
             },
             error: function(xhr, status, error) {

@@ -518,7 +518,7 @@ $(document).ready(function() {
             success: function(response) {
                 swal("Success", "Sale draft saved successfully", "success").then((value) => {
                     hideModals();
-                    location.reload();
+                    // location.reload();
                 });
             },
             error: function(xhr, status, error) {
