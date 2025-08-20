@@ -57,7 +57,7 @@ function handleGiraveesData(response) {
     $('#edit-giravee-paid-amount').val(giravees[0].paid_amount);
     $('#edit-giravee-interest-amount').val(giravees[0].interest_amount);
     $('#edit-giravee-due-amount').val(giravees[0].due_amount);
-    $('#edit-giravee-due-amount-without-interest').val(giravees[0].due_amount_without_interest);
+    // $('#edit-giravee-due-amount-without-interest').val(giravees[0].due_amount_without_interest);
     $('#edit-giravee-locker-number').val(giravees[0].locker_number);
     $('#edit-giravee-start-date').val(giravees[0].start_date);
     $('#edit-giravee-interest-type').val(giravees[0].interest_type);
@@ -76,6 +76,7 @@ function handleGiraveesData(response) {
                     <td><p class="text-xs font-weight-bold mb-0">${txn.date}</p></td>
                     <td><p class="text-xs font-weight-bold mb-0">${txn.amount}</p></td>
                     <td><p class="text-xs font-weight-bold mb-0">${txn.note || ''}</p></td>
+                    <td><button class="btn btn-sm btn-danger delete-transaction" data-id="${txn.id}">Delete</button></td>
                 </tr>
             `;
 
@@ -255,7 +256,7 @@ $(document).ready(function() {
             },
             data: giraveeInfo,
             success: function(response) {
-                swal("Success", "Giravee refreshed successfully", "success").then((value) => {
+                swal("Success", response.message, response.status).then((value) => {
                     hideModals();
                     location.reload();
                 });
@@ -295,6 +296,42 @@ $(document).ready(function() {
                 swal("Error", "Error deleting giravee: " + error, "error");
             }
         });
+    });
+
+    $(document).on('click', '.delete-transaction', function(event) {
+        event.preventDefault();
+
+        var url = '/giravee/delete-giravee-transaction/';
+        var csrftoken = getCookie('csrftoken');
+        var txnId = $(this).data('id');
+
+        swal({
+            title: "Are you sure?",
+            text: "This will permanently delete this Giravee transaction.",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    data: {
+                        'id': txnId
+                    },
+                    success: function(response) {
+                        swal("Success", "Giravee transaction deleted successfully", "success");
+                        $(`button[data-id="${txnId}"]`).closest('tr').remove();
+                    },
+                    error: function(xhr, status, error) {
+                        swal("Error", "Error deleting giravee transaction: " + error, "error");
+                    }
+                });
+            }
+        })
     });
 
     // Event handler for the reset button in the add giravee popup

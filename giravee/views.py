@@ -196,6 +196,28 @@ def delete_giravee(request):
 
 @login_required
 @require_POST
+def delete_giravee_transaction(request):
+
+    txn_id = request.POST.get('id')
+
+    if not txn_id:
+        return JsonResponse({'status': 'error', 'message': 'Giravee transaction ID is required.'}, status=400)
+
+    try:
+        txn = GiraveeTransaction.objects.get(id=txn_id)
+        txn.delete()
+
+        return JsonResponse({'status': 'success', 'message': 'Giravee transaction deleted successfully.'})
+
+    except ObjectDoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Giravee transaction not found.'}, status=404)
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@login_required
+@require_POST
 def search_giravee(request):
 
     search_text = request.POST.get('search_text', '').strip()
@@ -259,9 +281,13 @@ def refresh_giravee(request):
 
     try:
         giravee = Giravee.objects.get(id=giravee_id)
+
+        # if giravee.is_cleared:
+        #     return JsonResponse({'status': 'info', 'message': 'Giravee already cleared.'})
+
         giravee.save()
 
-        return JsonResponse({'status': 'Giravee refreshed successfully'})
+        return JsonResponse({'status': 'success', 'message': 'Giravee refreshed successfully'})
 
     except Giravee.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Giravee not found'}, status=404)

@@ -9,4 +9,5 @@ urlpatterns = [
     path('delete-giravee/', views.delete_giravee, name='delete-giravee'),
     path('search-giravee/', views.search_giravee, name='search-giravee'),
     path('refresh-giravee/', views.refresh_giravee, name='refresh-giravee'),
+    path('delete-giravee-transaction/', views.delete_giravee_transaction, name='delete-giravee-transaction'),
 ]

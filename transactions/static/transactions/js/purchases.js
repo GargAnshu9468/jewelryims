@@ -437,6 +437,7 @@ $(document).ready(function() {
                 let paymentAmount = parseFloat(purchaseInfo?.billno__payment_amount || 0);
                 const remainingAmount = parseFloat(purchaseInfo?.billno__remaining_amount || 0);
                 const paymentMethod = purchaseInfo?.billno__payment_method || '';
+                const discountNote = purchaseInfo?.billno__discount_note || '';
                 const stockNote = purchaseInfo?.stock_note || '';
                 const gst_amount = parseFloat(taxData?.gst_amount || 0);
                 const totalDiscount = parseFloat(taxData?.total_discount || 0);
@@ -468,6 +469,7 @@ $(document).ready(function() {
 
                 $('#product-items-view').html(productItemsHtml);
                 $('#payment-method-view').text(paymentMethod);
+                $('#discount-note-view').text(discountNote);
 
                 $('#gst-input').val(gst_amount.toFixed(2));
                 $('#view-labour-making-charges').val(total_labour_making_charge.toFixed(2));

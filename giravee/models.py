@@ -15,7 +15,7 @@ class Giravee(models.Model):
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
     interest_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    due_amount_without_interest = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    # due_amount_without_interest = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     locker_number = models.CharField(max_length=2, choices=LockerNumberChoices.choices(), default=LockerNumberChoices.ONE.value)
     interest_type = models.CharField(max_length=10, choices=InterestChoices.choices(), default=InterestChoices.COMPOUND.value)
     start_date = models.DateField(default=date.today)
@@ -69,18 +69,17 @@ class Giravee(models.Model):
         paid_amount = self.total_paid_amount()
 
         updated_due = Decimal(str(self.amount)) + interest - paid_amount
-        due_amount_without_interest = updated_due - interest
+        # due_amount_without_interest = updated_due - interest
+        is_cleared = True if updated_due <= 0 else False
 
         Giravee.objects.filter(pk=self.pk).update(
-            due_amount_without_interest=due_amount_without_interest,
+            # due_amount_without_interest=due_amount_without_interest,
             due_amount=updated_due,
             paid_amount=paid_amount,
             interest_amount=interest,
-            days_since_start=self.days_since_start
+            days_since_start=self.days_since_start,
+            is_cleared=is_cleared
         )
-
-        if updated_due <= 0 and not self.is_cleared:
-            Giravee.objects.filter(pk=self.pk).update(is_cleared=True)
 
     def __str__(self):
         return self.name
