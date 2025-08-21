@@ -94,7 +94,7 @@ def dashboard(request):
         (total_customers_last_month - total_customers) / total_customers_last_month * 100
     ) if total_customers_last_month > 0 else 0
 
-    total_giravee_amount = Giravee.objects.aggregate(
+    total_giravee_amount = Giravee.objects.filter(is_cleared=False).aggregate(
         total=Sum('amount')
     )['total'] or 0
 
