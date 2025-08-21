@@ -28,11 +28,15 @@
 
     <link rel="stylesheet" href="{% static 'accounts/css/index.css' %}">
 
+    <link href="{% static 'dashboard/css/custom-dark-theme.css' %}" rel="stylesheet" />
+
     {% block css %}{% endblock %}
 
     <!-- Nepcha Analytics (nepcha.com) -->
     <!-- Nepcha is a easy-to-use web analytics. No cookies and fully compliant with GDPR, CCPA and PECR. -->
     <script defer data-site="YOUR_DOMAIN_HERE" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
+
+    <script src="{% static 'dashboard/js/custom-dark-theme.js' %}"></script>
 </head>
 
 <body>
