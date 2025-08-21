@@ -25,11 +25,15 @@
     <!-- CSS Files -->
     <link id="pagestyle" href="{% static 'dashboard/css/soft-ui-dashboard.css' %}" rel="stylesheet" />
 
+    <link href="{% static 'dashboard/css/custom-dark-theme.css' %}" rel="stylesheet" />
+
     {% block css %}{% endblock %}
 
     <!-- Nepcha Analytics (nepcha.com) -->
     <!-- Nepcha is a easy-to-use web analytics. No cookies and fully compliant with GDPR, CCPA and PECR. -->
     <script defer data-site="YOUR_DOMAIN_HERE" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
+
+    <script src="{% static 'dashboard/js/custom-dark-theme.js' %}"></script>
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
@@ -62,6 +66,7 @@
                     {% include 'common/search.html' %}
                 {% endif %}
 
+                <button id="theme-toggler" class="btn btn-sm btn-outline-secondary ms-3 mb-0"><i class="fas fa-moon"></i></button>
             </div>
         </nav>
 

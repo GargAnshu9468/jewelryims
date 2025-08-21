@@ -9,9 +9,11 @@
     <!-- <img src="{% static 'dashboard/img/jeweleryimslogo.png' %}" -->
 
     <a class="navbar-brand m-0 d-flex align-items-center" href="/">
-        <img src="{% static 'dashboard/img/logo-ct-dark.png' %}"
-             class="navbar-brand-img h-100"
-             alt="IMS Logo">
+        <!-- Dark logo (for light mode) -->
+        <img src="{% static 'dashboard/img/logo-ct-dark.png' %}" class="navbar-brand-img h-100 logo-dark" alt="IMS Logo Dark">
+
+        <!-- White logo (for dark mode) -->
+        <img src="{% static 'dashboard/img/logo-ct.png' %}" class="navbar-brand-img h-100 logo-light" alt="IMS Logo Light">
         <span class="ms-1 font-weight-bold">IMS</span>
     </a>
 </div>

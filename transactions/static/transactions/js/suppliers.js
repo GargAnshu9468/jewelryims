@@ -178,7 +178,7 @@ $(document).ready(function() {
             success: function(response) {
                 swal("Success", "Supplier updated successfully", "success").then((value) => {
                     hideModals();
-                    // location.reload();
+                    location.reload();
                 });
             },
             error: function(xhr, status, error) {

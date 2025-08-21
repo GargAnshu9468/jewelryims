@@ -227,7 +227,7 @@ $(document).ready(function() {
             success: function(response) {
                 swal("Success", "Giravee updated successfully", "success").then((value) => {
                     hideModals();
-                    // location.reload();
+                    location.reload();
                 });
             },
             error: function(xhr, status, error) {
