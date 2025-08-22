@@ -31,7 +31,7 @@ def suppliers(request):
         pagination = paginator.page(paginator.num_pages)
 
     breadcrumbs = [
-        {'label': 'IMS', 'url': ''},
+        {'label': 'IMS', 'url': '/'},
         {'label': 'Transactions', 'url': ''},
         {'label': 'Suppliers', 'url': '/transactions/suppliers/'}
     ]
@@ -242,7 +242,7 @@ def purchases(request):
         pagination = paginator.page(paginator.num_pages)
 
     breadcrumbs = [
-        {'label': 'IMS', 'url': ''},
+        {'label': 'IMS', 'url': '/'},
         {'label': 'Transactions', 'url': ''},
         {'label': 'Purchases', 'url': '/transactions/purchases/'}
     ]
@@ -580,7 +580,7 @@ def sales(request):
         pagination = paginator.page(paginator.num_pages)
 
     breadcrumbs = [
-        {'label': 'IMS', 'url': ''},
+        {'label': 'IMS', 'url': '/'},
         {'label': 'Transactions', 'url': ''},
         {'label': 'Sales', 'url': '/transactions/sales/'}
     ]
@@ -952,7 +952,7 @@ def customers(request):
         pagination = paginator.page(paginator.num_pages)
 
     breadcrumbs = [
-        {'label': 'IMS', 'url': ''},
+        {'label': 'IMS', 'url': '/'},
         {'label': 'Transactions', 'url': ''},
         {'label': 'Customers', 'url': '/transactions/customers/'}
     ]

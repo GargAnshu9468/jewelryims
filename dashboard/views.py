@@ -13,7 +13,7 @@ def dashboard(request):
     last_month = today.replace(day=1) - timedelta(days=1)
 
     breadcrumbs = [
-        {'label': 'IMS', 'url': ''},
+        {'label': 'IMS', 'url': '/'},
         {'label': 'Dashboard', 'url': '/'}
     ]
 

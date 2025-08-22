@@ -29,7 +29,7 @@ def giravee(request):
         pagination = paginator.page(paginator.num_pages)
 
     breadcrumbs = [
-        {'label': 'IMS', 'url': ''},
+        {'label': 'IMS', 'url': '/'},
         {'label': 'Giravee', 'url': '/giravee/'}
     ]
 
