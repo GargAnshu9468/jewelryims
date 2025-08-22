@@ -269,6 +269,7 @@ def new_purchase(request):
     }
 
     payment_amount_raw = request.POST.get('paymentDetails[paymentAmount]')
+    old_stuff_value_raw = request.POST.get('oldStuffDetails[oldStuffValue]')
     discount_value_raw = request.POST.get('discountDetails[discountValue]')
     labour_making_charge__value_raw = request.POST.get('chargeDetails[labourMakingChargeValue]')
     gst_raw = request.POST.get('taxDetails[gst]')
@@ -276,6 +277,11 @@ def new_purchase(request):
     payment_data = {
         'payment_method': request.POST.get('paymentDetails[paymentMethod]'),
         'payment_amount': float(payment_amount_raw) if payment_amount_raw else 0
+    }
+
+    old_stuff_data = {
+        'old_stuff_value': float(old_stuff_value_raw) if old_stuff_value_raw else 0,
+        'old_stuff_note': request.POST.get('oldStuffDetails[oldStuffNote]')
     }
 
     discount_data = {
@@ -321,6 +327,7 @@ def new_purchase(request):
                 supplier=supplier,
                 **payment_data,
                 **discount_data,
+                **old_stuff_data,
                 **charges_data,
                 **other_data
             )
@@ -391,6 +398,8 @@ def get_purchase(request):
         'billno__discount_type',
         'billno__discount_value',
         'billno__discount_note',
+        'billno__old_stuff_value',
+        'billno__old_stuff_note',
         'billno__labour_making_charge_type',
         'billno__labour_making_charge_value',
         'billno__labour_making_charge_note',
@@ -598,6 +607,7 @@ def new_sale(request):
     }
 
     payment_amount_raw = request.POST.get('paymentDetails[paymentAmount]')
+    old_stuff_value_raw = request.POST.get('oldStuffDetails[oldStuffValue]')
     discount_value_raw = request.POST.get('discountDetails[discountValue]')
     labour_making_charge__value_raw = request.POST.get('chargeDetails[labourMakingChargeValue]')
     gst_raw = request.POST.get('taxDetails[gst]')
@@ -605,6 +615,11 @@ def new_sale(request):
     payment_data = {
         'payment_method': request.POST.get('paymentDetails[paymentMethod]'),
         'payment_amount': float(payment_amount_raw) if payment_amount_raw else 0
+    }
+
+    old_stuff_data = {
+        'old_stuff_value': float(old_stuff_value_raw) if old_stuff_value_raw else 0,
+        'old_stuff_note': request.POST.get('oldStuffDetails[oldStuffNote]')
     }
 
     discount_data = {
@@ -665,6 +680,7 @@ def new_sale(request):
             sale_bill = SaleBill.objects.create(
                 customer=customer,
                 **payment_data,
+                **old_stuff_data,
                 **discount_data,
                 **charges_data,
                 **other_data
@@ -741,6 +757,8 @@ def get_sale(request):
         'billno__discount_type',
         'billno__discount_value',
         'billno__discount_note',
+        'billno__old_stuff_value',
+        'billno__old_stuff_note',
         'billno__labour_making_charge_type',
         'billno__labour_making_charge_value',
         'billno__labour_making_charge_note',

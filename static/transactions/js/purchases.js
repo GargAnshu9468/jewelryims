@@ -174,6 +174,13 @@ function fetchPurchaseInformation() {
             purchaseInfo.products.push(product);
         });
 
+        // Old Stuff Details Section
+
+        purchaseInfo.oldStuffDetails = {};
+
+        purchaseInfo.oldStuffDetails.oldStuffValue = $('#old-stuff-value').val();
+        purchaseInfo.oldStuffDetails.oldStuffNote = $('#old-stuff-note').val();
+
         // Payment Details Section
 
         purchaseInfo.paymentDetails = {};
@@ -343,20 +350,24 @@ $(document).ready(function() {
         }
 
         // Step 4: Final subtotal before GST
-        const finalSubtotal = discountedTotal + totalLabourCharge;
+        let finalSubtotal = discountedTotal + totalLabourCharge;
 
-        // Step 5: GST
+        // Step 5: Subtract old stuff value
+        const oldStuffValue = parseFloat(purchaseInfo.oldStuffDetails.oldStuffValue || 0);
+        finalSubtotal -= oldStuffValue;
+
+        // Step 6: GST
         const gstPercent = parseFloat(purchaseInfo.taxDetails.gst || 0);
         const gstAmount = (finalSubtotal * gstPercent) / 100;
 
-        // Step 6: Total after discount and labour and GST
+        // Step 7: Total after discount and labour and GST
         const totalAfterDiscount = finalSubtotal + gstAmount;
 
-        // Step 7: Remaining
+        // Step 8: Remaining
         const paymentAmount = parseFloat(purchaseInfo.paymentDetails.paymentAmount || 0);
         const remainingAmount = totalAfterDiscount - paymentAmount;
 
-        // Step 8: Set values on the frontend
+        // Step 9: Set values on the frontend
         $('#total-amount-add').val(totalAfterDiscount.toFixed(2));
         $('#remaining-amount-add').val(Math.max(remainingAmount, 0).toFixed(2));
     });
@@ -445,8 +456,11 @@ $(document).ready(function() {
                 const total = parseFloat(taxData?.total || 0);
                 const total_labour_making_charge = parseFloat(taxData?.total_labour_making_charge || 0);
                 const totalWeight = parseFloat(taxData?.total_weight || 0);
+                const oldStuffNote = purchaseInfo?.billno__old_stuff_note || '';
+                const oldStuffValue = parseFloat(purchaseInfo?.billno__old_stuff_value || 0);
+
                 let totalBalance = total + previousBalance;
-                let grandTotalBalance = (totalBalance + total_labour_making_charge) - totalDiscount;
+                let grandTotalBalance = (totalBalance + total_labour_making_charge) - (totalDiscount + oldStuffValue);
                 let remainingBalance = grandTotalBalance - paymentAmount;
 
                 $('#invoice-no').text('INVOICE NO: ' + purchaseInfo.billno__billno);
@@ -469,9 +483,10 @@ $(document).ready(function() {
 
                 $('#product-items-view').html(productItemsHtml);
                 $('#payment-method-view').text(paymentMethod);
-                $('#discount-note-view').text(discountNote);
+                $('#old-stuff-note-view').text(oldStuffNote);
 
                 $('#gst-input').val(gst_amount.toFixed(2));
+                $('#old-stuff-value-view').val(oldStuffValue.toFixed(2));
                 $('#view-labour-making-charges').val(total_labour_making_charge.toFixed(2));
                 $('#total-price-view').val(totalBalance.toFixed(2));
                 $('#total-discount-view').val(totalDiscount.toFixed(2));

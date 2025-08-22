@@ -220,6 +220,24 @@
                     <a href="javascript:;" class="btn-link" id="add-more" style="color: #55b159; position: absolute; right: 45px;">+ Add More</a>
                 </div>
 
+                <div id="old-stuff-details-section" class="mt-4">
+                    <h5>Old Stuff Details</h5>
+
+                    <form id="old-stuff-details-form">
+                        <div class="form-group row">
+                            <div class="col">
+                                <label for="old-stuff-value">Old Stuff Value</label>
+                                <input type="number" class="form-control" id="old-stuff-value" name="old-stuff-value">
+                            </div>
+
+                            <div class="col">
+                                <label for="old-stuff-note">Note</label>
+                                <input type="text" class="form-control" id="old-stuff-note" name="old-stuff-note">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
                 <div id="discount-details-section" class="mt-4">
                     <h5>Discount Details</h5>
 
@@ -428,6 +446,11 @@
                                     </div>
 
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <label for="old-stuff-value-view">Old Stuff (Rs.):</label>
+                                        <input type="number" id="old-stuff-value-view" readonly>
+                                    </div>
+
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
                                         <label for="view-labour-making-charges">Labour:</label>
                                         <input type="number" id="view-labour-making-charges" readonly>
                                     </div>
@@ -461,8 +484,8 @@
                                 <hr style="border: 1px solid #000; margin: 10px 0;">
 
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <label for="discount-note-view">Discount note:</label>
-                                    <h6 id="discount-note-view"></h6>
+                                    <label for="old-stuff-note-view">Old stuff note:</label>
+                                    <h6 id="old-stuff-note-view"></h6>
                                 </div>
 
                                 <div style="display: flex; justify-content: space-between; align-items: center;">

@@ -58,6 +58,8 @@ class PurchaseBill(models.Model):
         blank=True,
         null=True
     )
+    old_stuff_value = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    old_stuff_note = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"Bill no: {str(self.billno)}"
@@ -88,7 +90,12 @@ class PurchaseBill(models.Model):
                 total_weight = sum(item.weight or 0 for item in purchaseitems)
                 total += total_weight * self.labour_making_charge_value
 
-        return total
+        # Adjust old stuff value
+
+        if self.old_stuff_value:
+            total -= self.old_stuff_value
+
+        return max(total, Decimal('0.00'))
 
 
 class PurchaseItem(models.Model):
@@ -163,17 +170,22 @@ def update_purchase_bill_details(sender, instance, **kwargs):
 
     final_subtotal = discounted_total + total_labour_making_charge
 
-    # Step 5: Now, calculate GST on final_subtotal
+    # Step 5: Subtract old stuff value
+
+    old_stuff_value = Decimal(bill.old_stuff_value or '0.00')
+    final_subtotal -= old_stuff_value
+
+    # Step 6: Now, calculate GST on final_subtotal
     gst_percent = Decimal(instance.gst or '0.00')
     gst_amount = (final_subtotal * gst_percent) / Decimal('100')
 
-    # Step 5: total = items_total + gst_amount + total_labour_making_charge
+    # Step 7: total = items_total + gst_amount + total_labour_making_charge
     total = items_total + gst_amount + total_labour_making_charge
 
-    # Step 6: total_after_discount = final_subtotal + gst_amount
+    # Step 8: total_after_discount = final_subtotal + gst_amount
     total_after_discount = final_subtotal + gst_amount
 
-    # Step 7: Update PurchaseBillDetails
+    # Step 9: Update PurchaseBillDetails
     PurchaseBillDetails.objects.filter(pk=instance.pk).update(
         total=items_total,
         total_after_discount=total_after_discount,
@@ -183,7 +195,7 @@ def update_purchase_bill_details(sender, instance, **kwargs):
         total_weight=total_weight
     )
 
-    # Step 8: Update PurchaseBill
+    # Step 10: Update PurchaseBill
     payment = Decimal(bill.payment_amount or '0.00')
     remaining = total_after_discount - payment
 
@@ -227,6 +239,8 @@ class SaleBill(models.Model):
         blank=True,
         null=True
     )
+    old_stuff_value = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    old_stuff_note = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"Bill no: {str(self.billno)}"
@@ -257,7 +271,12 @@ class SaleBill(models.Model):
                 total_weight = sum(item.weight or 0 for item in saleitems)
                 total += total_weight * self.labour_making_charge_value
 
-        return total
+        # Adjust old stuff value
+
+        if self.old_stuff_value:
+            total -= self.old_stuff_value
+
+        return max(total, Decimal('0.00'))
 
 
 class SaleItem(models.Model):
@@ -332,17 +351,22 @@ def update_sale_bill_details(sender, instance, **kwargs):
 
     final_subtotal = discounted_total + total_labour_making_charge
 
-    # Step 5: Now, calculate GST on final_subtotal
+    # Step 5: Subtract old stuff value
+
+    old_stuff_value = Decimal(bill.old_stuff_value or '0.00')
+    final_subtotal -= old_stuff_value
+
+    # Step 6: Now, calculate GST on final_subtotal
     gst_percent = Decimal(instance.gst or '0.00')
     gst_amount = (final_subtotal * gst_percent) / Decimal('100')
 
-    # Step 5: total = items_total + gst_amount + total_labour_making_charge
+    # Step 7: total = items_total + gst_amount + total_labour_making_charge
     total = items_total + gst_amount + total_labour_making_charge
 
-    # Step 6: total_after_discount = final_subtotal + gst_amount
+    # Step 8: total_after_discount = final_subtotal + gst_amount
     total_after_discount = final_subtotal + gst_amount
 
-    # Step 6: Update SaleBillDetails
+    # Step 9: Update SaleBillDetails
     SaleBillDetails.objects.filter(pk=instance.pk).update(
         total=items_total,
         total_after_discount=total_after_discount,
@@ -352,7 +376,7 @@ def update_sale_bill_details(sender, instance, **kwargs):
         total_weight=total_weight
     )
 
-    # Step 7: Update remaining in SaleBill
+    # Step 10: Update remaining in SaleBill
     payment = Decimal(bill.payment_amount or '0.00')
     remaining = total_after_discount - payment
 
