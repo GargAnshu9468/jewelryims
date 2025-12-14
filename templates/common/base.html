@@ -27,7 +27,96 @@
 
     <link href="{% static 'dashboard/css/custom-dark-theme.css' %}" rel="stylesheet" />
 
-    {% block css %}{% endblock %}
+    {% block css %}
+    <!-- Payment Due Start -->
+    <style>
+        #payment-blocker {
+          position: fixed;
+          inset: 0;
+          background: radial-gradient(circle, #3a0000, #000);
+          z-index: 99999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .blocker-card {
+          background: #111;
+          color: #fff;
+          padding: 50px 45px;
+          max-width: 520px;
+          width: 90%;
+          border-radius: 16px;
+          text-align: center;
+          box-shadow:
+            0 0 25px rgba(255, 0, 0, 0.6),
+            0 0 60px rgba(255, 0, 0, 0.4);
+          border: 2px solid #ff2e2e;
+        }
+        
+        .blocker-card .icon {
+          font-size: 64px;
+          margin-bottom: 10px;
+          animation: pulse 1.5s infinite;
+        }
+        
+        .blocker-card h1 {
+          color: #ff2e2e;
+          font-weight: 900;
+          letter-spacing: 2px;
+          margin-bottom: 5px;
+        }
+        
+        .blocker-card h3 {
+          color: #ffb3b3;
+          margin-bottom: 20px;
+        }
+        
+        .blocker-card .message {
+          font-size: 17px;
+          line-height: 1.6;
+        }
+        
+        .divider {
+          height: 2px;
+          background: linear-gradient(to right, transparent, #ff2e2e, transparent);
+          margin: 25px 0;
+        }
+        
+        .blocker-card .action {
+          font-size: 16px;
+          font-weight: bold;
+          color: #ffd6d6;
+        }
+        
+        .blocker-card .contact {
+          margin-top: 20px;
+          font-size: 15px;
+          color: #fff;
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.1); opacity: 0.7; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .animate-shake {
+          animation: shake 0.6s ease-in-out;
+        }
+        
+        @keyframes shake {
+          0% { transform: translateX(0); }
+          20% { transform: translateX(-6px); }
+          40% { transform: translateX(6px); }
+          60% { transform: translateX(-4px); }
+          80% { transform: translateX(4px); }
+          100% { transform: translateX(0); }
+        }
+    </style>
+    <!-- Payment Due End -->
+    {% endblock %}
 
     <!-- Nepcha Analytics (nepcha.com) -->
     <!-- Nepcha is a easy-to-use web analytics. No cookies and fully compliant with GDPR, CCPA and PECR. -->
