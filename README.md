@@ -1,1 +1,0 @@
-# Jewelry Inventory Management System
